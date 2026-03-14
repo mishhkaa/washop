@@ -21,8 +21,12 @@ class BotController extends Controller
         $shopCategories = ShopCategory::orderBy('sort_order')->orderBy('name')->get();
 
         if ($shopCategories->isEmpty()) {
-            (new ShopCategoriesSeeder())->run();
-            $shopCategories = ShopCategory::orderBy('sort_order')->orderBy('name')->get();
+            try {
+                (new ShopCategoriesSeeder())->run();
+                $shopCategories = ShopCategory::orderBy('sort_order')->orderBy('name')->get();
+            } catch (\Throwable $e) {
+                // Якщо БД read-only (напр. права на SQLite) — не падати, лишити порожній список
+            }
         }
         $botProducts = Product::with('manager')
             ->where('available_in_bot', true)

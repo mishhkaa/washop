@@ -82,7 +82,15 @@ php artisan key:generate
 ```bash
 touch database/database.sqlite
 chmod 664 database/database.sqlite
+chmod 775 database
 ```
+Якщо з’являється **«attempt to write a readonly database»** — веб-сервер не може писати в БД. Виконай (підстав свого користувача веб-сервера, напр. `www-data` або `nginx`):
+```bash
+chown -R www-data:www-data database
+chmod 664 database/database.sqlite
+chmod 775 database
+```
+Якщо проєкт під юзером `administrator`, а PHP-FPM/nginx працюють під ним же — достатньо `chmod 664 database/database.sqlite` та `chmod 775 database`.
 
 **MySQL:** створи БД і користувача, потім у `.env` вкажи `DB_*`.
 

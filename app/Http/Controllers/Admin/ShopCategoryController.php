@@ -15,8 +15,12 @@ class ShopCategoryController extends Controller
     {
         $categories = ShopCategory::orderBy('sort_order')->orderBy('name')->get();
         if ($categories->isEmpty()) {
-            (new ShopCategoriesSeeder())->run();
-            $categories = ShopCategory::orderBy('sort_order')->orderBy('name')->get();
+            try {
+                (new ShopCategoriesSeeder())->run();
+                $categories = ShopCategory::orderBy('sort_order')->orderBy('name')->get();
+            } catch (\Throwable $e) {
+                // Якщо БД read-only (напр. права на SQLite) — не падати
+            }
         }
         return view('admin.shop.categories.index', compact('categories'));
     }
