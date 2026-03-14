@@ -26,33 +26,33 @@
         .lang-switcher__drop a { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; color: #94a3b8; text-decoration: none; }
         .lang-switcher__drop a:hover { color: #fff; background: rgba(255,255,255,0.1); }
         .lang-switcher__drop a.active { color: #93c5fd; background: rgba(59,130,246,0.2); }
-        /* Чекаут: повний блок для Telegram WebApp — щоб стилі не перебивались */
+        /* Чекаут: звичний вигляд форми (і в браузері, і в Telegram) */
         .checkout-page { color: #e2e8f0 !important; }
         .checkout-page .checkout-title,
         .checkout-page .checkout-section-title { color: #f1f5f9 !important; font-weight: 600 !important; }
-        .checkout-page .checkout-total-label { color: #e2e8f0 !important; }
+        .checkout-page .checkout-total-label,
         .checkout-page .checkout-item { color: #e2e8f0 !important; }
         .checkout-page .checkout-section,
-        .checkout-page .checkout-cashback-block { background: #1e293b !important; border: 1px solid #334155 !important; border-radius: 12px !important; color: #e2e8f0 !important; }
-        .checkout-page .delivery-option { background: rgba(15,23,42,0.8) !important; border: 1px solid #334155 !important; border-radius: 10px !important; color: #e2e8f0 !important; }
-        .checkout-page .delivery-option:hover { background: rgba(30,41,59,0.9) !important; border-color: #475569 !important; }
-        .checkout-page .delivery-option:has(input:checked) { background: rgba(15,23,42,0.95) !important; border-color: rgba(59,130,246,0.5) !important; }
-        .checkout-page .delivery-option-label { color: #f1f5f9 !important; font-weight: 600 !important; }
+        .checkout-page .checkout-cashback-block { background: #1e293b !important; border: 1px solid #334155 !important; border-radius: 12px !important; }
+        .checkout-page .delivery-option { background: #0f172a !important; border: 1px solid #475569 !important; border-radius: 8px !important; }
+        .checkout-page .delivery-option:has(input:checked) { border-color: #2563eb !important; background: #1e293b !important; box-shadow: 0 0 0 2px rgba(37,99,235,0.25) !important; }
+        .checkout-page .delivery-option-label { color: #f1f5f9 !important; font-weight: 600 !important; font-size: 15px !important; }
         .checkout-page .delivery-option-note { color: #94a3b8 !important; }
         .checkout-page .delivery-option input[type="radio"] { accent-color: #2563eb !important; }
-        .checkout-page .checkout-delivery-fields { border-top-color: #334155 !important; }
-        .checkout-page .checkout-label { color: #e2e8f0 !important; font-weight: 600 !important; }
+        .checkout-page .checkout-delivery-fields { border-top: 1px solid #334155 !important; margin-top: 20px !important; padding-top: 20px !important; }
+        .checkout-page .checkout-label { color: #e2e8f0 !important; font-weight: 600 !important; font-size: 14px !important; margin-bottom: 8px !important; margin-top: 18px !important; }
+        .checkout-page .checkout-label:first-child { margin-top: 0 !important; }
         .checkout-page .checkout-input,
         .checkout-page input[type="text"],
-        .checkout-page input[type="number"] { background: #0f172a !important; color: #e2e8f0 !important; border: 1px solid #334155 !important; border-radius: 10px !important; padding: 12px 16px !important; -webkit-appearance: none !important; appearance: none !important; width: 100% !important; box-sizing: border-box !important; }
+        .checkout-page input[type="number"] { background: #0f172a !important; color: #e2e8f0 !important; border: 1px solid #475569 !important; border-radius: 8px !important; padding: 12px 16px !important; font-size: 15px !important; -webkit-appearance: none !important; appearance: none !important; width: 100% !important; box-sizing: border-box !important; }
+        .checkout-page .checkout-input:focus,
+        .checkout-page input:focus { border-color: #2563eb !important; box-shadow: 0 0 0 2px rgba(37,99,235,0.25) !important; outline: none !important; }
         .checkout-page .checkout-input::placeholder,
         .checkout-page input::placeholder { color: #64748b !important; }
-        .checkout-page .checkout-input:focus,
-        .checkout-page input:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 3px rgba(59,130,246,0.2) !important; outline: none !important; }
-        .checkout-page .checkout-link-inline { color: #60a5fa !important; }
+        .checkout-page .checkout-link-inline { color: #60a5fa !important; margin-top: 12px !important; font-size: 14px !important; }
         .checkout-page .checkout-error { color: #f87171 !important; }
         .checkout-page .checkout-cashback-hint { color: #94a3b8 !important; }
-        .checkout-page .btn-checkout-submit { background: #2563eb !important; color: #fff !important; border: none !important; border-radius: 8px !important; }
+        .checkout-page .btn-checkout-submit { background: #2563eb !important; color: #fff !important; border: none !important; border-radius: 8px !important; font-size: 16px !important; }
         .checkout-page .checkout-back-link,
         .checkout-page .checkout-link-back { color: #60a5fa !important; }
     </style>
