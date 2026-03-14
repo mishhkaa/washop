@@ -36,5 +36,10 @@ return [
     ],
 
     'shop_api_token' => env('SHOP_API_TOKEN'),
+
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'orders_chat_id' => env('TELEGRAM_ORDERS_CHAT_ID', '-1003698957698'),
+    ],
 ];
 

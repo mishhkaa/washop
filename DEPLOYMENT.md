@@ -27,6 +27,8 @@ git clone https://github.com/mishhkaa/washop.git
 cd washop
 ```
 
+**При оновленні проду (`git pull`):** не перезаписуй і не видаляй папку `storage/` (зокрема `storage/app/public/`). Там зберігаються завантажені фото товарів і категорій; якщо їх перезаписати, посилання в БД перестануть знаходити файли. При деплої з іншого сервера — скопіюй `storage/app/public/` з проду або не чіпай її після клону.
+
 Встановити залежності PHP та Node:
 ```bash
 composer install --no-dev --optimize-autoloader
@@ -67,7 +69,13 @@ SESSION_LIFETIME=120
 
 # Для API бота/магазину (заголовок X-API-Key)
 SHOP_API_TOKEN=згенеруй_довгий_випадковий_рядок
+
+# Telegram (один .env для Laravel і бота; заявки летять у чат)
+TELEGRAM_BOT_TOKEN=токен_від_BotFather
+TELEGRAM_ORDERS_CHAT_ID=-1003698957698
+SHOP_WEBAPP_URL=https://твій-домен.com
 ```
+**Важливо:** бот має бути доданий у чат (групу) з ID `TELEGRAM_ORDERS_CHAT_ID` як учасник, інакше Laravel не зможе відправляти туди повідомлення про замовлення.
 
 Згенерувати ключ додатку:
 ```bash
@@ -224,27 +232,23 @@ php artisan view:cache
 
 ## 9. Telegram-бот
 
-Бот відкриває магазин у WebApp і відправляє замовлення в CRM через API.
+Бот відкриває магазин у WebApp. Замовлення зберігаються в CRM, а **усі заявки автоматично відправляються в один чат** (див. `TELEGRAM_ORDERS_CHAT_ID` у Laravel `.env`). Для цього в Laravel мають бути задані `TELEGRAM_BOT_TOKEN` та `TELEGRAM_ORDERS_CHAT_ID` (розділ 3). Токен бота — той самий, що й для запуску `bot.py`.
 
-У `.env` на сервері **не обов’язково** додавати змінні для бота — бот запускається окремо і читає свій `.env` або змінні середовища.
+Бот і Laravel використовують **один і той самий `.env`** (TELEGRAM_BOT_TOKEN, SHOP_WEBAPP_URL, TELEGRAM_ORDERS_CHAT_ID).
 
 На сервері (або окремому VPS/контейнері), де буде працювати бот:
 
-1. Встанови Python 3.10+ та залежності:
+1. Встанови Python 3.10+ та залежності (у корені проєкту, де є `bot.py` і `.env`):
 ```bash
 cd /var/www/washop
 python3 -m venv venv
 source venv/bin/activate   # Linux/macOS
-pip install aiogram
+pip install -r requirements.txt
 ```
 
-2. Створи `.env` для бота (або експортуй змінні):
-```env
-TELEGRAM_BOT_TOKEN=токен_від_@BotFather
-SHOP_WEBAPP_URL=https://твій-домен.com
-```
+2. У **одному** `.env` (розділ 3) мають бути `TELEGRAM_BOT_TOKEN`, `SHOP_WEBAPP_URL`, `TELEGRAM_ORDERS_CHAT_ID`. Окремий файл `.env.bot` не потрібен.
 
-3. Запуск бота (вручну або через systemd/supervisor):
+3. Запуск бота (вручну або через systemd):
 ```bash
 python3 bot.py
 ```
@@ -267,31 +271,19 @@ python3 -m venv venv
 source venv/bin/activate   # Linux/macOS
 # Windows:  venv\Scripts\activate
 
-pip install aiogram
+pip install -r requirements.txt
 ```
 
-4. **Запуск змінними в одну команду:**
+4. **Запуск вручну** (бот читає `.env` з кореня проєкту):
 ```bash
-TELEGRAM_BOT_TOKEN=ТВІЙ_ТОКЕН_ВІД_BOTFATHER SHOP_WEBAPP_URL=https://mycrm.hookly.org python3 bot.py
-```
-
-Або створи файл `.env.bot` (не коміти в git):
-```env
-TELEGRAM_BOT_TOKEN=123456:ABC-DEF...
-SHOP_WEBAPP_URL=https://mycrm.hookly.org
-```
-І запусти:
-```bash
-export $(grep -v '^#' .env.bot | xargs) && python3 bot.py
+cd /home/administrator/web/mycrm.hookly.org/public_html/washop
+source venv/bin/activate
+python3 bot.py
 ```
 
 5. **Щоб бот сам працював на VPS (systemd — автозапуск при перезавантаженні):**
 
-   - Створи на сервері файл `.env.bot` у папці проєкту (наприклад `/home/administrator/web/mycrm.hookly.org/public_html/washop/.env.bot`) з вмістом:
-   ```env
-   TELEGRAM_BOT_TOKEN=твій_токен
-   SHOP_WEBAPP_URL=https://mycrm.hookly.org
-   ```
+   - У папці проєкту вже є **один** `.env` (з `TELEGRAM_BOT_TOKEN`, `SHOP_WEBAPP_URL`). Unit-файл підключає саме його (`EnvironmentFile=.../.env`). Файл `.env.bot` не потрібен.
 
    - Скопіюй unit-файл і увімкни сервіс (заміни шлях на свій, якщо проєкт в іншій папці):
    ```bash
@@ -314,9 +306,9 @@ export $(grep -v '^#' .env.bot | xargs) && python3 bot.py
 
    Якщо проєкт у `/home/administrator/...`, у unit-файлі можливо треба змінити `User=` та `Group=` на `administrator` (або твого користувача), щоб сервіс мав доступ до папки та venv.
 
-**Альтернатива (без systemd)** — бот у фоні вручну:
+**Альтернатива (без systemd)** — бот у фоні вручну (з папки проєкту читає `.env`):
 ```bash
-nohup env $(grep -v '^#' .env.bot | xargs) python3 bot.py > bot.log 2>&1 &
+cd /шлях/до/проєкту && source venv/bin/activate && nohup python3 bot.py > bot.log 2>&1 &
 ```
 
 У Telegram напиши боту `/start` — з’явиться кнопка «Відкрити магазин», по натисканню відкриється твій сайт магазину.
@@ -342,7 +334,7 @@ nohup env $(grep -v '^#' .env.bot | xargs) python3 bot.py > bot.log 2>&1 &
 | Крок | Команда / дія |
 |------|----------------|
 | 1 | `git clone`, `composer install --no-dev`, `npm ci` |
-| 2 | `cp .env.example .env` → відредагувати `APP_*`, `DB_*`, `APP_URL`, `SHOP_API_TOKEN` |
+| 2 | `cp .env.example .env` → відредагувати `APP_*`, `DB_*`, `APP_URL`, `SHOP_API_TOKEN`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_ORDERS_CHAT_ID` |
 | 3 | `php artisan key:generate` |
 | 4 | SQLite: `touch database/database.sqlite` або налаштувати MySQL |
 | 5 | `php artisan migrate --force` |
@@ -357,12 +349,27 @@ nohup env $(grep -v '^#' .env.bot | xargs) python3 bot.py > bot.log 2>&1 &
 
 ## Типові помилки
 
+- **`attempt to write a readonly database` (SQLite)** — веб-сервер не має прав на запис у БД. **Діагностика на сервері:** `php artisan db:check-writable` — покаже шлях до БД, чи є права на запис, власника файлу і які команди виконати. **Виправлення:** зайди на сервер по SSH з того юзера, під яким крутиться сайт (або root), перейди в корінь проєкту і виконай:
+  ```bash
+  cd /home/administrator/web/mycrm.hookly.org/public_html/washop
+  chmod 775 database
+  chmod 664 database/database.sqlite
+  ```
+  Далі **папку database має володіти той самий користувач, під яким працює PHP-FPM/nginx.** Дізнайся його: `ps aux | grep php-fpm` або у конфігу nginx/php-fpm (часто `www-data`). Потім:
+  ```bash
+  sudo chown -R WWW_USER:WWW_USER database
+  ```
+  (замість `WWW_USER` підстав `www-data`, `nginx` або того, хто в процесі). Якщо проєкт і PHP працюють під одним юзером (наприклад `administrator`) — достатньо `chmod` вище. Перезавантаж PHP-FPM після змін: `sudo systemctl reload php8.3-fpm` (або твій варіант). Після виправлення прав додай категорії з консолі: `php artisan db:seed --class=ShopCategoriesSeeder --force`.
+
+- **В CRM немає категорій, а на сайті є** — обидва беруть дані з таблиці `shop_categories`. Якщо на сайті категорії є, в БД вони є. В CRM зайди: «Магазин / ТГ-бот» → вкладка «Категорії». Якщо список порожній — `php artisan view:clear && php artisan cache:clear`. Якщо треба створити категорії — спочатку виправ права на БД (пункт вище), потім `php artisan db:seed --class=ShopCategoriesSeeder --force`.
+
 - **`ViteManifestNotFoundException` (manifest not found at …/public/build/manifest.json)** — на сервері не виконано `npm run build` або папка `public/build/` відсутня. Виконай на сервері `npm ci && npm run build` (потрібен Node 20+) або збери локально і завантаж папку `public/build/`.
 - **`SyntaxError: Unexpected token '.'` при `npm run build` на сервері** — на сервері занадто старий Node (наприклад v12). Не оновлюй Node на проді: збери локально (`npm run build`) і завантаж папку `public/build/` на сервер (див. розділ 5 вище).
 - **Стилі CRM не завантажуються** — переконайся, що є папка `public/build/` (збірка на сервері або завантажена з локальної машини) і document root веб-сервера вказує на `public`.
 - **`PHP Warning: Module "pdo_sqlite" is already loaded`** — у php.ini модуль pdo_sqlite підключено двічі (наприклад і в основному файлі, і в додатковому .ini). Видали один з рядків `extension=pdo_sqlite` або `extension=sqlite`. На роботу сидерів це не впливає.
 - **На проді немає товарів (магазин / бот пустий)** — запусти сидер: `php artisan db:seed --class=BotProductsSeeder --force`. Товари мають мати `available_in_bot = true` та `quantity > 0`; це налаштовується в адмінці в розділі «Товари».
 - **The image failed to upload** — перевір права на `storage/app/public` (775) і наявність `public/storage` → `storage/app/public`.
+- **Після оновлення (git pull / деплой) пропали фото товарів** — фото лежать у `storage/app/public/` (шляхи в БД у полі `image_path`). Не перезаписуй і не видаляй цю папку при деплої; якщо клонуєш репо заново — скопіюй `storage/app/public/` з проду або не чіпай її.
 - **419 / CSRF** — на веб-формах має бути `@csrf`; для API використовуй `X-API-Key`, не cookie.
 - **Бот не відкриває магазин** — перевір `SHOP_WEBAPP_URL` у боті і URL Web App у BotFather.
 

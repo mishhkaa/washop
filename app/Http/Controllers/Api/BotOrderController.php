@@ -8,6 +8,7 @@ use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\TelegramOrderNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -98,6 +99,12 @@ class BotOrderController extends Controller
 
                 return $sale->load('saleItems.product');
             });
+
+            try {
+                TelegramOrderNotification::sendOrderNotification($sale);
+            } catch (\Throwable $e) {
+                // не ламати відповідь API при помилці Telegram
+            }
 
             return response()->json([
                 'message' => 'Замовлення створено',

@@ -16,15 +16,20 @@
         .empty-cart-text { color: #94a3b8 !important; font-size: 14px; margin: 0 0 24px 0; }
         .btn-empty-cart { display: inline-block; padding: 12px 24px; background: #2563eb; color: #fff !important; border-radius: 6px; font-size: 15px; text-decoration: none; }
         .btn-empty-cart:hover { background: #3b82f6; color: #fff !important; }
-        .lang-switcher { display: flex; gap: 3px; align-items: stretch; }
-        .lang-switcher a { flex: 1; min-width: 0; padding: 5px 6px; border-radius: 6px; font-size: 10px; font-weight: 600; text-decoration: none; color: #94a3b8; display: flex; align-items: center; justify-content: center; gap: 4px; }
-        .lang-switcher a:hover { color: #e2e8f0; background: rgba(255,255,255,0.1); }
-        .lang-switcher a.active { color: #93c5fd; background: rgba(59,130,246,0.25); }
-        .lang-switcher .lang-flag { font-size: 1.15em; line-height: 1; }
+        .lang-switcher { position: relative; }
+        .lang-switcher__btn { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; color: #94a3b8; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); cursor: pointer; }
+        .lang-switcher__btn:hover { color: #e2e8f0; background: rgba(255,255,255,0.1); }
+        .lang-switcher__btn .lang-flag { font-size: 1.15em; }
+        .lang-switcher__btn::after { content: ''; width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid currentColor; margin-left: 2px; opacity: 0.8; }
+        .lang-switcher__drop { position: absolute; top: 100%; right: 0; margin-top: 4px; min-width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); padding: 4px; display: none; z-index: 100; }
+        .lang-switcher__drop.open { display: block; }
+        .lang-switcher__drop a { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; color: #94a3b8; text-decoration: none; }
+        .lang-switcher__drop a:hover { color: #fff; background: rgba(255,255,255,0.1); }
+        .lang-switcher__drop a.active { color: #93c5fd; background: rgba(59,130,246,0.2); }
     </style>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
-<body>
+<body @if(session('open_cart')) data-open-cart="1" @endif>
     <div class="container">
         <header class="sticky-header">
             <div class="header-content">
@@ -41,10 +46,25 @@
                     <a href="#" class="nav-item cart-open-trigger">{{ __('Cart') }}</a>
                 </nav>
                 <div class="header-actions">
-                    <div class="lang-switcher">
-                        <a href="{{ route('locale.switch', 'uk') }}" class="{{ app()->getLocale() === 'uk' ? 'active' : '' }}" title="Українська"><span class="lang-flag" aria-hidden="true">🇺🇦</span><span class="lang-code">УКР</span></a>
-                        <a href="{{ route('locale.switch', 'pl') }}" class="{{ app()->getLocale() === 'pl' ? 'active' : '' }}" title="Polski"><span class="lang-flag" aria-hidden="true">🇵🇱</span><span class="lang-code">POL</span></a>
-                        <a href="{{ route('locale.switch', 'en') }}" class="{{ app()->getLocale() === 'en' ? 'active' : '' }}" title="English"><span class="lang-flag" aria-hidden="true">🇬🇧</span><span class="lang-code">ENG</span></a>
+                    @php
+                        $locale = app()->getLocale();
+                        $langs = [
+                            'uk' => ['flag' => '🇺🇦', 'code' => 'УКР', 'title' => 'Українська'],
+                            'pl' => ['flag' => '🇵🇱', 'code' => 'POL', 'title' => 'Polski'],
+                            'en' => ['flag' => '🇬🇧', 'code' => 'ENG', 'title' => 'English'],
+                        ];
+                        $current = $langs[$locale] ?? $langs['en'];
+                    @endphp
+                    <div class="lang-switcher" id="langSwitcher">
+                        <button type="button" class="lang-switcher__btn" id="langSwitcherBtn" aria-expanded="false" aria-haspopup="true" aria-label="{{ $current['title'] }}">
+                            <span class="lang-flag">{{ $current['flag'] }}</span>
+                            <span class="lang-code">{{ $current['code'] }}</span>
+                        </button>
+                        <div class="lang-switcher__drop" id="langSwitcherDrop" role="menu">
+                            @foreach($langs as $code => $item)
+                                <a href="{{ route('locale.switch', $code) }}" role="menuitem" class="{{ $locale === $code ? 'active' : '' }}" title="{{ $item['title'] }}">{{ $item['flag'] }} {{ $item['code'] }}</a>
+                            @endforeach
+                        </div>
                     </div>
                     <button type="button" class="cart-icon cart-open-trigger" id="cartIcon" title="{{ __('Cart') }}" aria-label="{{ __('Cart') }}">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -139,6 +159,19 @@
             closeBtn && closeBtn.addEventListener('click', closeCart);
             backdrop && backdrop.addEventListener('click', closeCart);
             document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && modal.classList.contains('cart-modal-open')) closeCart(); });
+            if (document.body.dataset.openCart === '1') {
+                openCart();
+                delete document.body.dataset.openCart;
+            }
+        })();
+        (function() {
+            var wrap = document.getElementById('langSwitcher');
+            var btn = document.getElementById('langSwitcherBtn');
+            var drop = document.getElementById('langSwitcherDrop');
+            if (!wrap || !btn || !drop) return;
+            btn.addEventListener('click', function(e) { e.stopPropagation(); drop.classList.toggle('open'); btn.setAttribute('aria-expanded', drop.classList.contains('open')); });
+            document.addEventListener('click', function() { drop.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); });
+            wrap.addEventListener('click', function(e) { e.stopPropagation(); });
         })();
     </script>
 </body>

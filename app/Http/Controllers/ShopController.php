@@ -8,6 +8,7 @@ use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\ShopCategory;
 use App\Models\User;
+use App\Services\TelegramOrderNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -80,7 +81,7 @@ class ShopController extends Controller
         if ($request->wantsJson()) {
             return response()->json(['ok' => true, 'count' => array_sum($cart)]);
         }
-        return redirect()->route('shop.cart');
+        return redirect()->back()->with('open_cart', true);
     }
 
     public function removeFromCart(Request $request)
@@ -92,7 +93,7 @@ class ShopController extends Controller
         if ($request->wantsJson()) {
             return response()->json(['ok' => true, 'count' => array_sum($cart)]);
         }
-        return redirect()->route('shop.cart');
+        return redirect()->back()->with('open_cart', true);
     }
 
     public function checkoutForm(Request $request)
@@ -195,6 +196,12 @@ class ShopController extends Controller
                 }
                 return $sale;
             });
+
+            try {
+                TelegramOrderNotification::sendOrderNotification($sale->load('saleItems.product'));
+            } catch (\Throwable $e) {
+                // не ламати чекаут при помилці відправки в Telegram
+            }
 
             $request->session()->forget('shop_cart');
             return redirect()->route('shop.home')->with('success', __('Order :id placed thanks', ['id' => $sale->id]));

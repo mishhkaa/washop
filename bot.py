@@ -3,6 +3,13 @@ import logging
 import os
 import sys
 
+# Один .env для всього проєкту (Laravel + бот): завантажити з кореня проєкту
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+except ImportError:
+    pass
+
 from aiogram import Bot, Dispatcher
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from aiogram.filters import Command
@@ -15,11 +22,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "8245246326:AAEQaA3eWsBqaJLFgfZ92kwSNXey3zDyT84")
-SHOP_WEBAPP_URL = (os.getenv("SHOP_WEBAPP_URL", "https://mycrm.hookly.org/") or "").rstrip("/")
+TOKEN = (os.getenv("TELEGRAM_BOT_TOKEN") or "").strip()
+SHOP_WEBAPP_URL = (os.getenv("SHOP_WEBAPP_URL") or "").rstrip("/")
 
 if not TOKEN:
-    logger.error("TELEGRAM_BOT_TOKEN не задано. Встановіть змінну середовища або додайте токен у bot.py.")
+    logger.error("TELEGRAM_BOT_TOKEN не задано. Додай у .env у корені проєкту (той самий файл, що й для Laravel).")
     sys.exit(1)
 
 if not SHOP_WEBAPP_URL:
@@ -33,19 +40,31 @@ dp = Dispatcher()
 @dp.message(Command("start"))
 async def start(message: Message):
     try:
-        button = InlineKeyboardButton(
-            text="Відкрити магазин",
+        button_site = InlineKeyboardButton(
+            text="🌐 Odwiedź nasz sklep",
             web_app=WebAppInfo(url=SHOP_WEBAPP_URL),
         )
-        keyboard = InlineKeyboardMarkup(inline_keyboard=[[button]])
+        button_manager = InlineKeyboardButton(
+            text="📞 Skontaktuj się z menadżerem",
+            url="https://t.me/blvckPL",
+        )
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_site], [button_manager]])
         await message.answer(
-            "Натисни кнопку — відкриється магазин у Telegram. "
-            "Оформлення замовлення автоматично передасться в CRM.",
+            "🔥 Witaj w blvckPL - Twoim ulubionym sklepie vape! 🔥\n\n"
+            "✨ Oferujemy:\n"
+            "🎯 Wysokiej jakości kartridże\n"
+            "💨 Najlepsze płyny (e-liquidy)\n"
+            "🔋 Systemy i akcesoria\n"
+            "⚡ Najnowsze trendy na rynku vape'u\n\n"
+            "💯 Szybka dostawa\n"
+            "🎁 Najlepsze ceny\n"
+            "👥 Profesjonalna obsługa\n\n"
+            "Kliknij poniżej, aby odkryć naszą pełną ofertę! 👇",
             reply_markup=keyboard,
         )
     except Exception as e:
         logger.exception("Помилка при обробці /start: %s", e)
-        await message.answer("Виникла помилка. Спробуйте пізніше або зверніться до адміністратора.")
+        await message.answer("Виникла помилка. Спробуйте пізніше або зверніться do menadżera.")
 
 
 async def main():
