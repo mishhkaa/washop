@@ -1503,7 +1503,7 @@ main {
     background: #1e40af;
 }
 
-/* Checkout page */
+/* Checkout page — стиль як у кошику: картка + форми */
 .checkout-page {
     max-width: 600px;
     margin: 0 auto;
@@ -1541,12 +1541,14 @@ main {
 }
 .checkout-total-label strong { color: #f1f5f9; }
 .checkout-form { margin-bottom: 20px; }
+/* Секція як картка кошика (cart-modal-box / cart-footer) */
 .checkout-section {
     margin-bottom: 24px;
-    padding: 16px;
-    background: #1e293b;
-    border-radius: 8px;
-    border: 1px solid #334155;
+    padding: 18px 16px;
+    background: linear-gradient(180deg, #1e293b 0%, #1a2744 30%, #192234 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(51, 65, 85, 0.9);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 .checkout-section-title {
     font-size: 15px;
@@ -1570,16 +1572,27 @@ main {
     align-items: center;
     gap: 8px 12px;
     padding: 12px 14px;
-    background: #0f172a;
+    background: rgba(15, 23, 42, 0.6);
     border: 1px solid #334155;
-    border-radius: 6px;
+    border-radius: 10px;
     cursor: pointer;
-    transition: border-color 0.15s, background 0.15s;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
 }
-.delivery-option:hover { border-color: #475569; background: #1e293b; }
+.delivery-option:hover {
+    border-color: #475569;
+    background: rgba(30, 41, 59, 0.8);
+}
+.delivery-option:has(input:checked) {
+    background: rgba(15, 23, 42, 0.95);
+    border-color: rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2);
+}
 .delivery-option input[type="radio"] {
     margin: 0;
+    width: 18px;
+    height: 18px;
     accent-color: #2563eb;
+    flex-shrink: 0;
 }
 .delivery-option-label {
     font-weight: 600;
@@ -1596,16 +1609,20 @@ main {
 .btn-checkout-submit {
     width: 100%;
     padding: 14px 24px;
-    background: #2563eb;
+    background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
     color: #fff;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.15s;
+    transition: background 0.15s, box-shadow 0.15s;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
 }
-.btn-checkout-submit:hover { background: #3b82f6; }
+.btn-checkout-submit:hover {
+    background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
 .checkout-link-back {
     display: inline-block;
     margin-top: 16px;
@@ -1629,19 +1646,22 @@ main {
     margin-top: 12px;
 }
 .checkout-label:first-child { margin-top: 0; }
+/* Інпути як у кошику/пошуку — темний фон, однаковий стиль */
 .checkout-input {
     width: 100%;
-    padding: 10px 12px;
+    padding: 12px 16px;
     font-size: 14px;
     border: 1px solid #334155;
-    border-radius: 6px;
+    border-radius: 10px;
     background: #0f172a;
     color: #e2e8f0;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 .checkout-input::placeholder { color: #64748b; }
 .checkout-input:focus {
-    outline: none;
-    border-color: #2563eb;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 .checkout-link-inline {
     display: inline-block;
@@ -1651,7 +1671,14 @@ main {
     text-decoration: none;
 }
 .checkout-link-inline:hover { color: #93c5fd; text-decoration: underline; }
-.checkout-cashback-block { margin-bottom: 20px; }
+.checkout-cashback-block {
+    margin-bottom: 20px;
+    padding: 18px 16px;
+    background: linear-gradient(180deg, #1e293b 0%, #1a2744 30%, #192234 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(51, 65, 85, 0.9);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
 .checkout-cashback-hint { font-size: 12px; color: #94a3b8; margin-top: 4px; }
 
 /* Notification */

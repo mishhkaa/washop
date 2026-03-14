@@ -40,7 +40,7 @@
                                 <div class="text-xs text-gray-400 mt-0.5">#{{ $client->id }}</div>
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-600">
-                                @if($client->telegram_username)<span class="font-medium">@{{ $client->telegram_username }}</span>@else <span class="text-gray-400">—</span> @endif
+                                @if($client->telegram_username)<span class="font-medium">&#64;{{ $client->telegram_username }}</span>@else <span class="text-gray-400">—</span> @endif
                                 @if($client->telegram_user_id)<br><span class="text-gray-400 text-xs">ID {{ $client->telegram_user_id }}</span>@endif
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-600">{{ $client->phone ?? '—' }}</td>
