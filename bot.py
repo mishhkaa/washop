@@ -30,8 +30,11 @@ if not TOKEN:
     sys.exit(1)
 
 if not SHOP_WEBAPP_URL:
-    logger.error("SHOP_WEBAPP_URL не задано.")
+    logger.error("SHOP_WEBAPP_URL не задано. Додай у .env на сервері, наприклад: SHOP_WEBAPP_URL=https://crm.hookly.org")
     sys.exit(1)
+
+# Щоб було видно, який саме сайт відкривається по кнопці в боті
+logger.info("URL магазину (кнопка в боті): %s", SHOP_WEBAPP_URL)
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', __('Shop')) - CloudCity</title>
+    <title>@yield('title', __('Shop')) - blvckPL</title>
     <link rel="stylesheet" href="{{ asset('css/shop.css') }}">
     <style>
         body { background: linear-gradient(160deg, #0f172a 0%, #0c1929 50%, #0e1a2e 100%) !important; color: #e2e8f0 !important; margin: 0; padding: 0; padding-top: 52px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
@@ -35,7 +35,7 @@
             <div class="header-content">
                 <div class="logo">
                     <a href="{{ route('shop.home') }}" style="color: inherit; text-decoration: none;">
-                        <h1>CloudCity</h1>
+                        <h1>blvckPL</h1>
                     </a>
                 </div>
                 <nav class="header-nav desktop-only">
@@ -125,7 +125,7 @@
                         {{ __('Write to manager') }}
                     </a>
                 </div>
-                <div class="footer-brand">CloudCity</div>
+                <div class="footer-brand">blvckPL</div>
             </div>
         </footer>
     </div>
