@@ -26,14 +26,35 @@
         .lang-switcher__drop a { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; color: #94a3b8; text-decoration: none; }
         .lang-switcher__drop a:hover { color: #fff; background: rgba(255,255,255,0.1); }
         .lang-switcher__drop a.active { color: #93c5fd; background: rgba(59,130,246,0.2); }
-        /* Чекаут: примусово темний стиль полів у Telegram WebApp */
+        /* Чекаут: повний блок для Telegram WebApp — щоб стилі не перебивались */
+        .checkout-page { color: #e2e8f0 !important; }
+        .checkout-page .checkout-title,
+        .checkout-page .checkout-section-title { color: #f1f5f9 !important; font-weight: 600 !important; }
+        .checkout-page .checkout-total-label { color: #e2e8f0 !important; }
+        .checkout-page .checkout-item { color: #e2e8f0 !important; }
+        .checkout-page .checkout-section,
+        .checkout-page .checkout-cashback-block { background: #1e293b !important; border: 1px solid #334155 !important; border-radius: 12px !important; color: #e2e8f0 !important; }
+        .checkout-page .delivery-option { background: rgba(15,23,42,0.8) !important; border: 1px solid #334155 !important; border-radius: 10px !important; color: #e2e8f0 !important; }
+        .checkout-page .delivery-option:hover { background: rgba(30,41,59,0.9) !important; border-color: #475569 !important; }
+        .checkout-page .delivery-option:has(input:checked) { background: rgba(15,23,42,0.95) !important; border-color: rgba(59,130,246,0.5) !important; }
+        .checkout-page .delivery-option-label { color: #f1f5f9 !important; font-weight: 600 !important; }
+        .checkout-page .delivery-option-note { color: #94a3b8 !important; }
+        .checkout-page .delivery-option input[type="radio"] { accent-color: #2563eb !important; }
+        .checkout-page .checkout-delivery-fields { border-top-color: #334155 !important; }
         .checkout-page .checkout-label { color: #e2e8f0 !important; font-weight: 600 !important; }
         .checkout-page .checkout-input,
         .checkout-page input[type="text"],
-        .checkout-page input[type="number"] { background: #0f172a !important; color: #e2e8f0 !important; border: 1px solid #334155 !important; border-radius: 10px !important; padding: 12px 16px !important; -webkit-appearance: none !important; appearance: none !important; }
-        .checkout-page .checkout-input::placeholder { color: #64748b !important; }
-        .checkout-page .checkout-input:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 3px rgba(59,130,246,0.2) !important; outline: none !important; }
+        .checkout-page input[type="number"] { background: #0f172a !important; color: #e2e8f0 !important; border: 1px solid #334155 !important; border-radius: 10px !important; padding: 12px 16px !important; -webkit-appearance: none !important; appearance: none !important; width: 100% !important; box-sizing: border-box !important; }
+        .checkout-page .checkout-input::placeholder,
+        .checkout-page input::placeholder { color: #64748b !important; }
+        .checkout-page .checkout-input:focus,
+        .checkout-page input:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 3px rgba(59,130,246,0.2) !important; outline: none !important; }
         .checkout-page .checkout-link-inline { color: #60a5fa !important; }
+        .checkout-page .checkout-error { color: #f87171 !important; }
+        .checkout-page .checkout-cashback-hint { color: #94a3b8 !important; }
+        .checkout-page .btn-checkout-submit { background: #2563eb !important; color: #fff !important; border: none !important; border-radius: 8px !important; }
+        .checkout-page .checkout-back-link,
+        .checkout-page .checkout-link-back { color: #60a5fa !important; }
     </style>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
@@ -171,6 +192,14 @@
                 openCart();
                 delete document.body.dataset.openCart;
             }
+        })();
+        (function() {
+            if (typeof Telegram === 'undefined' || !Telegram.WebApp) return;
+            var wa = Telegram.WebApp;
+            wa.ready();
+            if (wa.setHeaderColor) wa.setHeaderColor('#0f172a');
+            if (wa.setBackgroundColor) wa.setBackgroundColor('#0f172a');
+            if (wa.expand) wa.expand();
         })();
         (function() {
             if (typeof Telegram === 'undefined' || !Telegram.WebApp || !Telegram.WebApp.initDataUnsafe || !Telegram.WebApp.initDataUnsafe.user) return;
