@@ -93,9 +93,7 @@ class BotOrderController extends Controller
                     ]);
                 }
 
-                if ($client && $orderTotal > 0) {
-                    $client->accrueCashback($orderTotal);
-                }
+                // Кешбек тільки від менеджера (не нараховується автоматично за замовленням)
 
                 return $sale->load('saleItems.product');
             });

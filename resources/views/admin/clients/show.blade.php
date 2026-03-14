@@ -64,7 +64,7 @@
             </div>
             <div class="p-6 space-y-4">
                 <p class="text-3xl font-bold text-emerald-600 tabular-nums">{{ number_format((float) $client->cashback_balance, 2) }} zł</p>
-                <p class="text-sm text-gray-500">Нараховується автоматично при кожній покупці ({{ $client->cashback_percent }}% від суми). Адмін може змінити баланс або % у формі зліва.</p>
+                <p class="text-sm text-gray-500">Баланс спочатку 0 — кешбек надає тільки менеджер/адмін у формі зліва. Клієнт може використати його при оформленні замовлення.</p>
                 @if($client->telegram_username)
                     <a href="https://t.me/{{ $client->telegram_username }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2.5 bg-[#0088cc] text-white rounded-xl text-sm font-medium hover:bg-[#0077b5] transition shadow-sm mt-2">
                         Написати в Telegram

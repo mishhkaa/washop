@@ -246,9 +246,7 @@ class ShopController extends Controller
                         'profit' => $data['profit'],
                     ]);
                 }
-                if ($client && ($orderTotal - $useCashback) > 0) {
-                    $client->accrueCashback($orderTotal - $useCashback);
-                }
+                // Кешбек не нараховується автоматично — лише коли менеджер надасть у картці клієнта
                 if ($request->filled('telegram_user_id') || $request->filled('telegram_username')) {
                     session([
                         'shop_telegram_user_id' => $request->input('telegram_user_id'),
