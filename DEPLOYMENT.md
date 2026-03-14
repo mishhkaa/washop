@@ -8,7 +8,7 @@
 
 - **PHP** 8.2+ з розширеннями: `bcmath`, `ctype`, `curl`, `dom`, `fileinfo`, `json`, `mbstring`, `openssl`, `pdo`, `tokenizer`, `xml`, `sqlite3` (або `pdo_mysql` для MySQL).
 - **Composer** 2.x.
-- **Node.js** 18+ та **npm** (для збірки фронту).
+- **Node.js** 20+ або 22+ та **npm** (для збірки фронту; Vite 7 не працює з Node 12/16/18).
 - (За бажанням) **MySQL/MariaDB** або залишаємо **SQLite**.
 
 Перевірка PHP:
@@ -118,6 +118,22 @@ npm run build
 - Або збери локально: `npm run build`, потім завантаж папку `public/build/` на сервер у той самий шлях (наприклад `public_html/washop/public/build/`).
 
 Якщо збірку не виконувати, застосунок не впаде (підключиться fallback CSS), але стилі CRM будуть спрощені.
+
+**Якщо на сервері старий Node (наприклад v12) і виникає `SyntaxError: Unexpected token '.'` при `npm run build`** — на сервері не потрібно оновлювати Node. Збери ассети **локально** (де вже стоїть Node 20+):
+
+```bash
+# На своєму комп’ютері (у папці проєкту)
+npm ci
+npm run build
+```
+
+Потім завантаж на сервер **тільки** папку `public/build/` (разом з усім вмістом) у каталог `.../washop/public/build/`. Наприклад через SCP/SFTP:
+
+```bash
+scp -r public/build/* root@сервер:/home/administrator/web/mycrm.hookly.org/public_html/washop/public/build/
+```
+
+Або архівуй `public/build`, залий на сервер і розпакуй у `washop/public/build/`.
 
 ---
 
@@ -247,8 +263,10 @@ python3 bot.py
 
 ## Типові помилки
 
-- **`ViteManifestNotFoundException` (manifest not found at …/public/build/manifest.json)** — на сервері не виконано `npm run build` або папка `public/build/` відсутня. Виконай на сервері `npm ci && npm run build` або завантаж зібрану папку `public/build/` з локальної машини.
-- **Стилі CRM не завантажуються** — переконайся, що виконано `npm run build` і document root веб-сервера вказує на `public`.
+- **`ViteManifestNotFoundException` (manifest not found at …/public/build/manifest.json)** — на сервері не виконано `npm run build` або папка `public/build/` відсутня. Виконай на сервері `npm ci && npm run build` (потрібен Node 20+) або збери локально і завантаж папку `public/build/`.
+- **`SyntaxError: Unexpected token '.'` при `npm run build` на сервері** — на сервері занадто старий Node (наприклад v12). Не оновлюй Node на проді: збери локально (`npm run build`) і завантаж папку `public/build/` на сервер (див. розділ 5 вище).
+- **Стилі CRM не завантажуються** — переконайся, що є папка `public/build/` (збірка на сервері або завантажена з локальної машини) і document root веб-сервера вказує на `public`.
+- **`PHP Warning: Module "pdo_sqlite" is already loaded`** — у php.ini модуль pdo_sqlite підключено двічі (наприклад і в основному файлі, і в додатковому .ini). Видали один з рядків `extension=pdo_sqlite` або `extension=sqlite`. На роботу сидерів це не впливає.
 - **На проді немає товарів (магазин / бот пустий)** — запусти сидер: `php artisan db:seed --class=BotProductsSeeder --force`. Товари мають мати `available_in_bot = true` та `quantity > 0`; це налаштовується в адмінці в розділі «Товари».
 - **The image failed to upload** — перевір права на `storage/app/public` (775) і наявність `public/storage` → `storage/app/public`.
 - **419 / CSRF** — на веб-формах має бути `@csrf`; для API використовуй `X-API-Key`, не cookie.
