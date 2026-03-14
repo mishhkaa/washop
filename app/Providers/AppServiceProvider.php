@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Product;
+use App\Models\ShopCategory;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 
@@ -33,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
             }
             $view->with('cartCount', array_sum($cart));
             $view->with('cartItems', $cartItems);
+            $view->with('shopCategories', ShopCategory::orderBy('sort_order')->orderBy('name')->get());
         });
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ShopCategory;
+use Database\Seeders\ShopCategoriesSeeder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -13,6 +14,10 @@ class ShopCategoryController extends Controller
     public function index()
     {
         $categories = ShopCategory::orderBy('sort_order')->orderBy('name')->get();
+        if ($categories->isEmpty()) {
+            (new ShopCategoriesSeeder())->run();
+            $categories = ShopCategory::orderBy('sort_order')->orderBy('name')->get();
+        }
         return view('admin.shop.categories.index', compact('categories'));
     }
 

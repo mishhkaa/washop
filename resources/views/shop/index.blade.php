@@ -28,7 +28,7 @@
                 <div class="category-image">
                     <img src="{{ $cat->image_path ? $cat->image_url : 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400&h=400&fit=crop' }}" alt="{{ $cat->name }}">
                 </div>
-                <h3>{{ __("category.{$cat->slug}") }}</h3>
+                <h3>{{ $cat->name }}</h3>
             </a>
         @endforeach
     </div>

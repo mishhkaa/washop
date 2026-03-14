@@ -35,10 +35,9 @@
                 </div>
                 <nav class="header-nav desktop-only">
                     <a href="{{ route('shop.home') }}#about" class="nav-item">{{ __('About us') }}</a>
-                    <a href="{{ route('shop.home', ['category' => 'pods']) }}" class="nav-item">{{ __('category.pods') }}</a>
-                    <a href="{{ route('shop.home', ['category' => 'disposables']) }}" class="nav-item">{{ __('category.disposables') }}</a>
-                    <a href="{{ route('shop.home', ['category' => 'liquids']) }}" class="nav-item">{{ __('category.liquids') }}</a>
-                    <a href="{{ route('shop.home', ['category' => 'cartridges']) }}" class="nav-item">{{ __('category.cartridges') }}</a>
+                    @foreach($shopCategories ?? [] as $cat)
+                        <a href="{{ route('shop.home', ['category' => $cat->slug]) }}" class="nav-item">{{ $cat->name }}</a>
+                    @endforeach
                     <a href="#" class="nav-item cart-open-trigger">{{ __('Cart') }}</a>
                 </nav>
                 <div class="header-actions">
@@ -62,10 +61,9 @@
             </div>
             <nav class="mobile-menu" id="mobileMenu">
                 <a href="{{ route('shop.home') }}#about">{{ __('About us') }}</a>
-                <a href="{{ route('shop.home', ['category' => 'pods']) }}">{{ __('category.pods') }}</a>
-                <a href="{{ route('shop.home', ['category' => 'liquids']) }}">{{ __('category.liquids') }}</a>
-                <a href="{{ route('shop.home', ['category' => 'cartridges']) }}">{{ __('category.cartridges') }}</a>
-                <a href="{{ route('shop.home', ['category' => 'disposables']) }}">{{ __('category.disposables') }}</a>
+                @foreach($shopCategories ?? [] as $cat)
+                    <a href="{{ route('shop.home', ['category' => $cat->slug]) }}">{{ $cat->name }}</a>
+                @endforeach
                 <a href="#" class="cart-open-trigger">{{ __('Cart') }}</a>
             </nav>
         </header>
@@ -97,14 +95,10 @@
                         <a href="{{ route('shop.home') }}#about">{{ __('About us') }}</a>
                         <span class="footer-dot">·</span>
                         <a href="{{ route('shop.home') }}#delivery">{{ __('Delivery') }}</a>
-                        <span class="footer-dot">·</span>
-                        <a href="{{ route('shop.home', ['category' => 'pods']) }}">{{ __('category.pods') }}</a>
-                        <span class="footer-dot">·</span>
-                        <a href="{{ route('shop.home', ['category' => 'disposables']) }}">{{ __('category.disposables') }}</a>
-                        <span class="footer-dot">·</span>
-                        <a href="{{ route('shop.home', ['category' => 'liquids']) }}">{{ __('category.liquids') }}</a>
-                        <span class="footer-dot">·</span>
-                        <a href="{{ route('shop.home', ['category' => 'cartridges']) }}">{{ __('category.cartridges') }}</a>
+                        @foreach($shopCategories ?? [] as $cat)
+                            <span class="footer-dot">·</span>
+                            <a href="{{ route('shop.home', ['category' => $cat->slug]) }}">{{ $cat->name }}</a>
+                        @endforeach
                     </nav>
                     <a href="https://t.me/blvckPL" target="_blank" rel="noopener" class="footer-telegram">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.226-.461-1.901-.903-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.139-5.062 3.345-.479.329-.913.489-1.302.481-.428-.009-1.252-.241-1.865-.44-.752-.244-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.831-2.529 6.998-3.015 3.333-1.386 4.025-1.627 4.477-1.635.099-.002.321.023.465.141.121.1.154.234.17.33.015.096.034.313.02.483z"/></svg>

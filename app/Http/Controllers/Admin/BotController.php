@@ -7,6 +7,7 @@ use App\Models\Sale;
 use App\Models\Product;
 use App\Models\ShopCategory;
 use Illuminate\Http\Request;
+use Database\Seeders\ShopCategoriesSeeder;
 
 class BotController extends Controller
 {
@@ -18,6 +19,11 @@ class BotController extends Controller
         $tab = $request->get('tab', 'categories');
 
         $shopCategories = ShopCategory::orderBy('sort_order')->orderBy('name')->get();
+
+        if ($shopCategories->isEmpty()) {
+            (new ShopCategoriesSeeder())->run();
+            $shopCategories = ShopCategory::orderBy('sort_order')->orderBy('name')->get();
+        }
         $botProducts = Product::with('manager')
             ->where('available_in_bot', true)
             ->orderBy('name')
