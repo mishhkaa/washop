@@ -4,6 +4,45 @@
 
 ---
 
+## Швидкі команди (вже є код, треба оновити і запустити бота)
+
+Виконай на сервері **по черзі** (шлях заміни на свій, якщо проєкт не в `washop`):
+
+```bash
+cd /home/administrator/web/mycrm.hookly.org/public_html/washop
+
+# Скинути локальні зміни і підтягнути код з git (.env не перезапишеться)
+git fetch origin main
+git reset --hard origin/main
+
+# Laravel
+composer install --no-dev --optimize-autoloader
+php artisan migrate --force
+php artisan config:cache
+
+# Віртуальне середовище і бот (якщо venv немає — створюється)
+python3 -m venv venv 2>/dev/null || true
+source venv/bin/activate
+pip install -r requirements.txt 2>/dev/null || pip install "aiogram>=3.0" "python-dotenv>=1.0"
+
+# Запуск бота вручну (перевірка)
+python3 bot.py
+```
+
+Якщо бот у консолі запустився (бачиш "Бот запускається...") — зупини його Ctrl+C і запусти через systemd:
+
+```bash
+sudo cp deploy/washop-bot.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable washop-bot
+sudo systemctl start washop-bot
+sudo systemctl status washop-bot
+```
+
+Переконайся, що в `.env` у корені проєкту є: `TELEGRAM_BOT_TOKEN`, `SHOP_WEBAPP_URL`, `TELEGRAM_ORDERS_CHAT_ID`. Файл `.env` в git не потрапляє — його не перезапише `git reset --hard`.
+
+---
+
 ## 1. Сервер і залежності
 
 - **PHP** 8.2+ з розширеннями: `bcmath`, `ctype`, `curl`, `dom`, `fileinfo`, `json`, `mbstring`, `openssl`, `pdo`, `tokenizer`, `xml`, `sqlite3` (або `pdo_mysql` для MySQL).
