@@ -53,7 +53,7 @@
                             'pl' => ['flag' => '🇵🇱', 'code' => 'POL', 'title' => 'Polski'],
                             'en' => ['flag' => '🇬🇧', 'code' => 'ENG', 'title' => 'English'],
                         ];
-                        $current = $langs[$locale] ?? $langs['en'];
+                        $current = $langs[$locale] ?? $langs['pl'];
                     @endphp
                     <div class="lang-switcher" id="langSwitcher">
                         <button type="button" class="lang-switcher__btn" id="langSwitcherBtn" aria-expanded="false" aria-haspopup="true" aria-label="{{ $current['title'] }}">

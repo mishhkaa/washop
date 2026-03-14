@@ -50,5 +50,13 @@
     "Order total": "Suma zamówienia",
     "pcs": "szt.",
     "Close": "Zamknij",
-    "Please choose delivery method": "Wybierz metodę dostawy (Paczkomat lub osobisty odbiór)."
+    "Please choose delivery method": "Wybierz metodę dostawy (Paczkomat lub osobisty odbiór).",
+    "Paczkomat code": "Kod paczkomatu",
+    "Paczkomat code placeholder": "np. KRA010",
+    "Find paczkomat on map": "Znajdź paczkomat na mapie",
+    "Your name": "Imię i nazwisko",
+    "Phone": "Telefon",
+    "District / area": "Dzielnica / rejon",
+    "Required for Paczkomat": "Podaj kod paczkomatu.",
+    "Required for pickup": "Wypełnij imię, telefon i rejon przy odbiorze osobistym."
 }

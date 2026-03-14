@@ -1615,6 +1615,43 @@ main {
 }
 .checkout-link-back:hover { color: #93c5fd; }
 
+.checkout-delivery-fields {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid #334155;
+}
+.checkout-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-bottom: 6px;
+    margin-top: 12px;
+}
+.checkout-label:first-child { margin-top: 0; }
+.checkout-input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    background: #0f172a;
+    color: #e2e8f0;
+}
+.checkout-input::placeholder { color: #64748b; }
+.checkout-input:focus {
+    outline: none;
+    border-color: #2563eb;
+}
+.checkout-link-inline {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #60a5fa;
+    text-decoration: none;
+}
+.checkout-link-inline:hover { color: #93c5fd; text-decoration: underline; }
+
 /* Notification */
 .notification {
     position: fixed;

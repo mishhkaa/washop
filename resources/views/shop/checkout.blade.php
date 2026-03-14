@@ -37,15 +37,42 @@
             @endif
             <div class="delivery-options">
                 <label class="delivery-option">
-                    <input type="radio" name="delivery_method" value="paczkomat" {{ old('delivery_method', 'paczkomat') === 'paczkomat' ? 'checked' : '' }}>
+                    <input type="radio" name="delivery_method" value="paczkomat" id="delivery_paczkomat" {{ old('delivery_method', 'paczkomat') === 'paczkomat' ? 'checked' : '' }}>
                     <span class="delivery-option-label">{{ __('Paczkomat InPost') }}</span>
                     <span class="delivery-option-note">{{ __('Payment on delivery') }}</span>
                 </label>
                 <label class="delivery-option">
-                    <input type="radio" name="delivery_method" value="osobisty_odbior" {{ old('delivery_method') === 'osobisty_odbior' ? 'checked' : '' }}>
+                    <input type="radio" name="delivery_method" value="osobisty_odbior" id="delivery_osobisty" {{ old('delivery_method') === 'osobisty_odbior' ? 'checked' : '' }}>
                     <span class="delivery-option-label">{{ __('Personal pickup') }}</span>
                     <span class="delivery-option-note">{{ __('Pickup at point') }}</span>
                 </label>
+            </div>
+
+            <div id="paczkomat-fields" class="checkout-delivery-fields">
+                <label class="checkout-label" for="delivery_paczkomat_code">{{ __('Paczkomat code') }}</label>
+                <input type="text" name="delivery_paczkomat_code" id="delivery_paczkomat_code" class="checkout-input" placeholder="{{ __('Paczkomat code placeholder') }}" value="{{ old('delivery_paczkomat_code') }}" maxlength="32" autocomplete="off">
+                <a href="https://inpost.pl/znajdz-paczkomat" target="_blank" rel="noopener noreferrer" class="checkout-link-inline">{{ __('Find paczkomat on map') }}</a>
+                @if($errors->has('delivery_paczkomat_code'))
+                <p class="checkout-error">{{ $errors->first('delivery_paczkomat_code') }}</p>
+                @endif
+            </div>
+
+            <div id="pickup-fields" class="checkout-delivery-fields" style="display: none;">
+                <label class="checkout-label" for="delivery_pickup_name">{{ __('Your name') }}</label>
+                <input type="text" name="delivery_pickup_name" id="delivery_pickup_name" class="checkout-input" value="{{ old('delivery_pickup_name') }}" maxlength="255">
+                @if($errors->has('delivery_pickup_name'))
+                <p class="checkout-error">{{ $errors->first('delivery_pickup_name') }}</p>
+                @endif
+                <label class="checkout-label" for="delivery_pickup_phone">{{ __('Phone') }}</label>
+                <input type="text" name="delivery_pickup_phone" id="delivery_pickup_phone" class="checkout-input" value="{{ old('delivery_pickup_phone') }}" maxlength="64" placeholder="+48 ...">
+                @if($errors->has('delivery_pickup_phone'))
+                <p class="checkout-error">{{ $errors->first('delivery_pickup_phone') }}</p>
+                @endif
+                <label class="checkout-label" for="delivery_pickup_district">{{ __('District / area') }}</label>
+                <input type="text" name="delivery_pickup_district" id="delivery_pickup_district" class="checkout-input" value="{{ old('delivery_pickup_district') }}" maxlength="255" placeholder="{{ __('District / area') }}">
+                @if($errors->has('delivery_pickup_district'))
+                <p class="checkout-error">{{ $errors->first('delivery_pickup_district') }}</p>
+                @endif
             </div>
         </section>
 
@@ -70,6 +97,24 @@
     if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.expand) {
         Telegram.WebApp.expand();
     }
+
+    function toggleDeliveryFields() {
+        var method = document.querySelector('input[name="delivery_method"]:checked');
+        var paczkomatBlock = document.getElementById('paczkomat-fields');
+        var pickupBlock = document.getElementById('pickup-fields');
+        if (!method || !paczkomatBlock || !pickupBlock) return;
+        if (method.value === 'paczkomat') {
+            paczkomatBlock.style.display = 'block';
+            pickupBlock.style.display = 'none';
+        } else {
+            paczkomatBlock.style.display = 'none';
+            pickupBlock.style.display = 'block';
+        }
+    }
+    document.querySelectorAll('input[name="delivery_method"]').forEach(function(radio) {
+        radio.addEventListener('change', toggleDeliveryFields);
+    });
+    toggleDeliveryFields();
 })();
 </script>
 @endpush

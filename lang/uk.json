@@ -50,5 +50,13 @@
     "Order total": "Сума замовлення",
     "pcs": "шт.",
     "Close": "Закрити",
-    "Please choose delivery method": "Оберіть спосіб доставки (Paczkomat або особистий відбір)."
+    "Please choose delivery method": "Оберіть спосіб доставки (Paczkomat або особистий відбір).",
+    "Paczkomat code": "Код пачкомата",
+    "Paczkomat code placeholder": "напр. KRA010",
+    "Find paczkomat on map": "Знайти пачкомат на карті",
+    "Your name": "Ім'я та прізвище",
+    "Phone": "Телефон",
+    "District / area": "Район / регіон",
+    "Required for Paczkomat": "Вкажіть код пачкомата.",
+    "Required for pickup": "Заповніть ім'я, телефон і район при особистому відборі."
 }

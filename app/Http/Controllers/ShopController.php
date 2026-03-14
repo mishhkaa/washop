@@ -115,12 +115,26 @@ class ShopController extends Controller
 
     public function checkout(Request $request)
     {
-        $request->validate([
+        $rules = [
             'delivery_method' => 'required|in:paczkomat,osobisty_odbior',
-        ], [
+        ];
+        $messages = [
             'delivery_method.required' => __('Please choose delivery method'),
             'delivery_method.in' => __('Please choose delivery method'),
-        ]);
+        ];
+        if ($request->input('delivery_method') === 'paczkomat') {
+            $rules['delivery_paczkomat_code'] = 'required|string|max:32';
+            $messages['delivery_paczkomat_code.required'] = __('Required for Paczkomat');
+        }
+        if ($request->input('delivery_method') === 'osobisty_odbior') {
+            $rules['delivery_pickup_name'] = 'required|string|max:255';
+            $rules['delivery_pickup_phone'] = 'required|string|max:64';
+            $rules['delivery_pickup_district'] = 'required|string|max:255';
+            $messages['delivery_pickup_name.required'] = __('Required for pickup');
+            $messages['delivery_pickup_phone.required'] = __('Required for pickup');
+            $messages['delivery_pickup_district.required'] = __('Required for pickup');
+        }
+        $request->validate($rules, $messages);
         $cart = $request->session()->get('shop_cart', []);
         if (empty($cart)) {
             return redirect()->route('shop.home')->with('message', __('Cart is empty'));
@@ -180,6 +194,14 @@ class ShopController extends Controller
                 ];
                 if (Schema::hasColumn('sales', 'delivery_method')) {
                     $saleData['delivery_method'] = $request->input('delivery_method');
+                }
+                if (Schema::hasColumn('sales', 'delivery_paczkomat_code')) {
+                    $saleData['delivery_paczkomat_code'] = $request->input('delivery_method') === 'paczkomat' ? trim((string) $request->input('delivery_paczkomat_code')) : null;
+                }
+                if (Schema::hasColumn('sales', 'delivery_pickup_name')) {
+                    $saleData['delivery_pickup_name'] = $request->input('delivery_method') === 'osobisty_odbior' ? trim((string) $request->input('delivery_pickup_name')) : null;
+                    $saleData['delivery_pickup_phone'] = $request->input('delivery_method') === 'osobisty_odbior' ? trim((string) $request->input('delivery_pickup_phone')) : null;
+                    $saleData['delivery_pickup_district'] = $request->input('delivery_method') === 'osobisty_odbior' ? trim((string) $request->input('delivery_pickup_district')) : null;
                 }
                 $sale = Sale::create($saleData);
                 foreach ($saleItemsData as $data) {

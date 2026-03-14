@@ -19,6 +19,10 @@ class Sale extends Model
         'telegram_user_id',
         'telegram_username',
         'delivery_method',
+        'delivery_paczkomat_code',
+        'delivery_pickup_name',
+        'delivery_pickup_phone',
+        'delivery_pickup_district',
     ];
 
     protected $casts = [

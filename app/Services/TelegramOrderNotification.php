@@ -82,6 +82,20 @@ class TelegramOrderNotification
         if (\Illuminate\Support\Facades\Schema::hasColumn('sales', 'delivery_method') && $sale->delivery_method) {
             $delivery = $sale->delivery_method === 'paczkomat' ? 'Paczkomat' : 'Osobisty odbiór';
             $lines[] = 'Доставка: ' . $delivery;
+            if ($sale->delivery_method === 'paczkomat' && \Illuminate\Support\Facades\Schema::hasColumn('sales', 'delivery_paczkomat_code') && $sale->delivery_paczkomat_code) {
+                $lines[] = '📦 Paczkomat: ' . $sale->delivery_paczkomat_code;
+            }
+            if ($sale->delivery_method === 'osobisty_odbior') {
+                if (\Illuminate\Support\Facades\Schema::hasColumn('sales', 'delivery_pickup_name') && $sale->delivery_pickup_name) {
+                    $lines[] = '👤 Imię: ' . $sale->delivery_pickup_name;
+                }
+                if (\Illuminate\Support\Facades\Schema::hasColumn('sales', 'delivery_pickup_phone') && $sale->delivery_pickup_phone) {
+                    $lines[] = '📞 Tel: ' . $sale->delivery_pickup_phone;
+                }
+                if (\Illuminate\Support\Facades\Schema::hasColumn('sales', 'delivery_pickup_district') && $sale->delivery_pickup_district) {
+                    $lines[] = '📍 Rejon: ' . $sale->delivery_pickup_district;
+                }
+            }
         }
 
         return implode("\n", $lines);

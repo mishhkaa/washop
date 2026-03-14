@@ -50,5 +50,13 @@
     "Order total": "Order total",
     "pcs": "pcs",
     "Close": "Close",
-    "Please choose delivery method": "Please choose delivery method (Paczkomat or personal pickup)."
+    "Please choose delivery method": "Please choose delivery method (Paczkomat or personal pickup).",
+    "Paczkomat code": "Paczkomat code",
+    "Paczkomat code placeholder": "e.g. KRA010",
+    "Find paczkomat on map": "Find paczkomat on map",
+    "Your name": "Your name",
+    "Phone": "Phone",
+    "District / area": "District / area",
+    "Required for Paczkomat": "Please enter the Paczkomat code.",
+    "Required for pickup": "Please fill in name, phone and district for personal pickup."
 }
