@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudCity - Vape Shop</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="sticky-header">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>CloudCity</h1>
+                </div>
+                <nav class="header-nav desktop-only">
+                    <a href="#about" class="nav-item">O nas</a>
+                    <a href="#pods" class="nav-item" onclick="event.preventDefault(); filterByCategory('pods')">Podsystemy</a>
+                    <a href="#disposables" class="nav-item" onclick="event.preventDefault(); filterByCategory('disposables')">Jednorazówki</a>
+                    <a href="#liquids" class="nav-item" onclick="event.preventDefault(); filterByCategory('liquids')">Liquidy</a>
+                    <a href="#cartridges" class="nav-item" onclick="event.preventDefault(); filterByCategory('cartridges')">Kartridże</a>
+                    <button class="nav-manager-btn" onclick="contactManager()">Kontakt</button>
+                </nav>
+                <div class="header-actions">
+                    <div class="language-selector">
+                        <span class="language-icon">🌐</span>
+                        <select id="languageSelect" onchange="changeLanguage(this.value)">
+                            <option value="pl">🇵🇱 PL</option>
+                            <option value="uk">🇺🇦 UA</option>
+                            <option value="ru">🇷🇺 RU</option>
+                        </select>
+                    </div>
+                    <div class="cart-icon" id="cartIcon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                        </svg>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </div>
+                    <button class="mobile-menu-toggle" id="mobileMenuToggle" onclick="toggleMobileMenu()">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
+            </div>
+            <nav class="mobile-menu" id="mobileMenu">
+                <a href="#about" onclick="closeMobileMenu()">O nas</a>
+                <a href="#pods" onclick="closeMobileMenu()">Podsystemy</a>
+                <a href="#liquids" onclick="closeMobileMenu()">Liquidy</a>
+                <a href="#contacts" onclick="closeMobileMenu()">Kartridże</a>
+                <button class="btn-manager-mobile" onclick="contactManager(); closeMobileMenu();">Skontaktuj się z menedżerem</button>
+            </nav>
+        </header>
+
+        <!-- Search Section -->
+        <section class="search-section">
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="🔍 Szukaj podsystemów, kartridży, liquidów...">
+            </div>
+        </section>
+
+        <!-- Categories Section -->
+        <section class="categories-section">
+            <div class="categories-container">
+                <div class="category-card" data-category="pods" onclick="filterByCategory('pods')">
+                    <div class="category-image">
+                        <img src="img/oxva-nexlim-go-pod-kit-260x260.webp" alt="Podsystemy">
+                    </div>
+                    <h3>Podsystemy</h3>
+                </div>
+                <div class="category-card" data-category="disposables" onclick="filterByCategory('disposables')">
+                    <div class="category-image">
+                        <img src="img/Jednorazowka-ElfBar-Sweet-King-30000-puffs-50-mg-z-regulacja-slodyczy.jpg" alt="Jednorazówki">
+                    </div>
+                    <h3>Jednorazówki</h3>
+                </div>
+                <div class="category-card" data-category="liquids" onclick="filterByCategory('liquids')">
+                    <div class="category-image">
+                        <img src="img/c502df7d-722a-4e19-9139-93642eef8d17.png" alt="Liquidy">
+                    </div>
+                    <h3>Liquidy</h3>
+                </div>
+                <div class="category-card" data-category="cartridges" onclick="filterByCategory('cartridges')">
+                    <div class="category-image">
+                        <img src="img/scrnli_04_12_2023_22-01-10.webp" alt="Kartridże">
+                    </div>
+                    <h3>Kartridże</h3>
+                </div>
+            </div>
+        </section>
+
+        <main>
+            <!-- Filters Section -->
+            <section class="filters-section">
+                <div class="filters-header">
+                    <h3 class="filters-title">🔍 Filtry</h3>
+                    <button class="btn-reset" onclick="resetFilters()">
+                        <span>🔄</span>
+                        <span>Resetuj</span>
+                    </button>
+                </div>
+                <div class="filters-container">
+                    <div class="filter-group">
+                        <div class="filter-icon">📊</div>
+                        <div class="filter-content">
+                            <label>Sortuj według</label>
+                            <select id="sortFilter" onchange="applyFilters()">
+                                <option value="default">Domyślnie</option>
+                                <option value="price-asc">Cena: od najniższej</option>
+                                <option value="price-desc">Cena: od najwyższej</option>
+                                <option value="name-asc">Nazwa: A-Z</option>
+                                <option value="name-desc">Nazwa: Z-A</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-icon">💰</div>
+                        <div class="filter-content">
+                            <label>Cena</label>
+                        <select id="priceFilter" onchange="applyFilters()">
+                            <option value="all">Wszystkie ceny</option>
+                            <option value="0-50">Do 50 zł</option>
+                            <option value="50-80">50-80 zł</option>
+                            <option value="80-100">80-100 zł</option>
+                            <option value="100+">Od 100 zł</option>
+                        </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="products" id="products">
+                <!-- Products will be rendered dynamically -->
+            </section>
+            <div class="load-more-container" id="loadMoreContainer" style="display: none;">
+                <button class="btn-load-more" onclick="loadMoreProducts()">Zobacz więcej</button>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Informacje</h4>
+                    <a href="#about">O nas</a>
+                    <a href="#delivery">Dostawa</a>
+                    <a href="#contacts">Kontakty</a>
+                </div>
+                <div class="footer-divider"></div>
+                <div class="footer-section">
+                    <h4>Kategorie</h4>
+                    <a href="#pods">Podsystemy</a>
+                    <a href="#disposables">Jednorazówki</a>
+                    <a href="#liquids">Liquidy</a>
+                    <a href="#cartridges">Kartridże</a>
+                </div>
+                <div class="footer-divider"></div>
+                <div class="footer-section">
+                    <h4>Kontakt</h4>
+                    <button class="footer-manager-btn" onclick="contactManager()">Skontaktuj się z menedżerem</button>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Cart Modal -->
+        <div class="modal" id="cartModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="cartTitle">Koszyk</h2>
+                    <span class="close" onclick="closeCart()">&times;</span>
+                </div>
+                <div class="modal-body" id="cartItems">
+                    <p class="empty-cart">Koszyk jest pusty</p>
+                </div>
+                <div class="modal-footer">
+                    <div class="total">
+                        <strong id="totalLabel">Razem: <span id="totalPrice">0</span> zł</strong>
+                    </div>
+                    <button class="btn-checkout" id="checkoutBtn" onclick="checkout()">Złóż zamówienie</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Підключення до CRM: вставте перед завантаженням сторінки або в тег script:
+        // window.CRM_API_URL = 'https://your-crm.com';  window.CRM_API_TOKEN = 'your-token';
+        const CRM_API_URL = window.CRM_API_URL || '';
+        const CRM_API_TOKEN = window.CRM_API_TOKEN || '';
+
+        let cart = [];
+        let cartCount = 0;
+        let currentCategory = 'all';
+        let currentSearch = '';
+        let currentSort = 'default';
+        let currentPriceFilter = 'all';
+        let productsToShow = 6;
+        let allFilteredProducts = [];
+        let currentLanguage = localStorage.getItem('language') || 'pl';
+        let productsData = [];
+
+        // Translations
+        const translations = {
+            pl: {
+                about: 'O nas', pods: 'Podsystemy', disposables: 'Jednorazówki', liquids: 'Liquidy', cartridges: 'Kartridże',
+                contact: 'Kontakt', contactManager: 'Skontaktuj się z menedżerem',
+                searchPlaceholder: 'Szukaj podsystemów, kartridży, liquidów...',
+                categoryPods: 'Podsystemy', categoryDisposables: 'Jednorazówki', categoryLiquids: 'Liquidy', categoryCartridges: 'Kartridże',
+                filters: 'Filtry', reset: 'Resetuj', sortBy: 'Sortuj według', sortDefault: 'Domyślnie',
+                sortPriceAsc: 'Cena: od najniższej', sortPriceDesc: 'Cena: od najwyższej', sortNameAsc: 'Nazwa: A-Z', sortNameDesc: 'Nazwa: Z-A',
+                price: 'Cena', allPrices: 'Wszystkie ceny', price0_50: 'Do 50 zł', price50_80: '50-80 zł', price80_100: '80-100 zł', price100Plus: 'Od 100 zł',
+                add: 'Dodaj', loadMore: 'Zobacz więcej', noProducts: 'Nie znaleziono produktów',
+                cart: 'Koszyk', emptyCart: 'Koszyk jest pusty', total: 'Razem', checkout: 'Złóż zamówienie',
+                addedToCart: 'dodano do koszyka!', cartEmpty: 'Koszyk jest pusty!', orderPlaced: 'Zamówienie złożone!',
+                info: 'Informacje', categories: 'Kategorie', delivery: 'Dostawa', contacts: 'Kontakty'
+            },
+            uk: {
+                about: 'Про нас', pods: 'Підсистеми', disposables: 'Одноразки', liquids: 'Рідини', cartridges: 'Картриджі',
+                contact: 'Контакт', contactManager: "Зв'язатися з менеджером",
+                searchPlaceholder: 'Пошук підсистем, картриджів, рідин...',
+                categoryPods: 'Підсистеми', categoryDisposables: 'Одноразки', categoryLiquids: 'Рідини', categoryCartridges: 'Картриджі',
+                filters: 'Фільтри', reset: 'Скинути', sortBy: 'Сортувати за', sortDefault: 'За замовчуванням',
+                sortPriceAsc: 'Ціна: від низької', sortPriceDesc: 'Ціна: від високої', sortNameAsc: 'Назва: А-Я', sortNameDesc: 'Назва: Я-А',
+                price: 'Ціна', allPrices: 'Всі ціни', price0_50: 'До 50 грн', price50_80: '50-80 грн', price80_100: '80-100 грн', price100Plus: 'Від 100 грн',
+                add: 'Додати', loadMore: 'Дивитись ще', noProducts: 'Товари не знайдено',
+                cart: 'Кошик', emptyCart: 'Кошик порожній', total: 'Всього', checkout: 'Оформити замовлення',
+                addedToCart: 'додано до кошика!', cartEmpty: 'Кошик порожній!', orderPlaced: 'Замовлення оформлено!',
+                info: 'Інформація', categories: 'Категорії', delivery: 'Доставка', contacts: 'Контакти'
+            },
+            ru: {
+                about: 'О нас', pods: 'Подсистемы', disposables: 'Одноразки', liquids: 'Жидкости', cartridges: 'Картриджи',
+                contact: 'Контакт', contactManager: 'Связаться с менеджером',
+                searchPlaceholder: 'Поиск подсистем, картриджей, жидкостей...',
+                categoryPods: 'Подсистемы', categoryDisposables: 'Одноразки', categoryLiquids: 'Жидкости', categoryCartridges: 'Картриджи',
+                filters: 'Фильтры', reset: 'Сбросить', sortBy: 'Сортировать по', sortDefault: 'По умолчанию',
+                sortPriceAsc: 'Цена: от низкой', sortPriceDesc: 'Цена: от высокой', sortNameAsc: 'Название: А-Я', sortNameDesc: 'Название: Я-А',
+                price: 'Цена', allPrices: 'Все цены', price0_50: 'До 50 руб', price50_80: '50-80 руб', price80_100: '80-100 руб', price100Plus: 'От 100 руб',
+                add: 'Добавить', loadMore: 'Смотреть еще', noProducts: 'Товары не найдены',
+                cart: 'Корзина', emptyCart: 'Корзина пуста', total: 'Итого', checkout: 'Оформить заказ',
+                addedToCart: 'добавлено в корзину!', cartEmpty: 'Корзина пуста!', orderPlaced: 'Заказ оформлен!',
+                info: 'Информация', categories: 'Категории', delivery: 'Доставка', contacts: 'Контакты'
+            }
+        };
+
+        function t(key) {
+            return translations[currentLanguage][key] || key;
+        }
+
+        function changeLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('language', lang);
+            document.getElementById('languageSelect').value = lang;
+            document.documentElement.lang = lang;
+            updateTranslations();
+        }
+
+        function updateTranslations() {
+            // Navigation
+            document.querySelectorAll('.nav-item').forEach((el, idx) => {
+                const keys = ['about', 'pods', 'disposables', 'liquids', 'cartridges'];
+                if (keys[idx]) el.textContent = t(keys[idx]);
+            });
+            document.querySelector('.nav-manager-btn').textContent = t('contact');
+            
+            // Mobile menu
+            const mobileLinks = document.querySelectorAll('.mobile-menu a');
+            if (mobileLinks[0]) mobileLinks[0].textContent = t('about');
+            if (mobileLinks[1]) mobileLinks[1].textContent = t('pods');
+            if (mobileLinks[2]) mobileLinks[2].textContent = t('liquids');
+            if (mobileLinks[3]) mobileLinks[3].textContent = t('cartridges');
+            document.querySelector('.btn-manager-mobile').textContent = t('contactManager');
+            
+            // Search
+            document.getElementById('searchInput').placeholder = '🔍 ' + t('searchPlaceholder');
+            
+            // Categories
+            const categoryTitles = document.querySelectorAll('.category-card h3');
+            categoryTitles[0].textContent = t('categoryPods');
+            categoryTitles[1].textContent = t('categoryDisposables');
+            categoryTitles[2].textContent = t('categoryLiquids');
+            categoryTitles[3].textContent = t('categoryCartridges');
+            
+            // Filters
+            document.querySelector('.filters-title').innerHTML = '🔍 ' + t('filters');
+            document.querySelector('.btn-reset span:last-child').textContent = t('reset');
+            document.querySelectorAll('.filter-content label')[0].textContent = t('sortBy');
+            document.querySelectorAll('.filter-content label')[1].textContent = t('price');
+            
+            const sortSelect = document.getElementById('sortFilter');
+            sortSelect.options[0].text = t('sortDefault');
+            sortSelect.options[1].text = t('sortPriceAsc');
+            sortSelect.options[2].text = t('sortPriceDesc');
+            sortSelect.options[3].text = t('sortNameAsc');
+            sortSelect.options[4].text = t('sortNameDesc');
+            
+            const priceSelect = document.getElementById('priceFilter');
+            priceSelect.options[0].text = t('allPrices');
+            priceSelect.options[1].text = t('price0_50');
+            priceSelect.options[2].text = t('price50_80');
+            priceSelect.options[3].text = t('price80_100');
+            priceSelect.options[4].text = t('price100Plus');
+            
+            // Footer
+            const footerSections = document.querySelectorAll('.footer-section h4');
+            if (footerSections[0]) footerSections[0].textContent = t('info');
+            if (footerSections[1]) footerSections[1].textContent = t('categories');
+            if (footerSections[2]) footerSections[2].textContent = t('contact');
+            
+            const footerLinks = document.querySelectorAll('.footer-section a');
+            if (footerLinks[0]) footerLinks[0].textContent = t('about');
+            if (footerLinks[1]) footerLinks[1].textContent = t('delivery');
+            if (footerLinks[2]) footerLinks[2].textContent = t('contacts');
+            if (footerLinks[3]) footerLinks[3].textContent = t('pods');
+            if (footerLinks[4]) footerLinks[4].textContent = t('disposables');
+            if (footerLinks[5]) footerLinks[5].textContent = t('liquids');
+            if (footerLinks[6]) footerLinks[6].textContent = t('cartridges');
+            
+            document.querySelector('.footer-manager-btn').textContent = t('contactManager');
+            
+            // Cart modal
+            document.getElementById('cartTitle').textContent = t('cart');
+            document.getElementById('totalLabel').innerHTML = `<strong>${t('total')}: <span id="totalPrice">0</span> zł</strong>`;
+            document.getElementById('checkoutBtn').textContent = t('checkout');
+            
+            // Re-render products to update "Add" button
+            renderProducts();
+            renderCart();
+        }
+
+        // Базовий список товарів (використовується, якщо CRM не підключено)
+        const productsDataStatic = [
+            { id: 1, name: 'Elfliq', description: 'Liquid 30ml, sól 50mg', price: 50, category: 'liquids', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop' },
+            { id: 2, name: 'Chaser', description: 'Liquid 30ml, sól 50mg', price: 50, category: 'liquids', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop' },
+            { id: 3, name: 'Vozol Prime', description: 'Liquid 30ml, sól 50mg', price: 50, category: 'liquids', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop' },
+            { id: 4, name: 'HQD', description: 'Liquid 30ml, sól 50mg', price: 50, category: 'liquids', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop' },
+            { id: 5, name: 'XROS Pod 0.6Ω', description: 'Kartridż 3ml, 0.6Ω', price: 25, category: 'cartridges', image: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400&h=400&fit=crop' },
+            { id: 6, name: 'XROS Pod 0.8Ω', description: 'Kartridż 3ml, 0.8Ω', price: 25, category: 'cartridges', image: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400&h=400&fit=crop' },
+            { id: 7, name: 'Oxva Xlim 0.6Ω', description: 'Kartridż 0.6Ω', price: 25, category: 'cartridges', image: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400&h=400&fit=crop' },
+            { id: 8, name: 'Oxva Xlim 0.4Ω', description: 'Kartridż 0.4Ω', price: 25, category: 'cartridges', image: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400&h=400&fit=crop' },
+            { id: 9, name: 'Ursa Nano 0.8Ω', description: 'Kartridż 0.8Ω', price: 25, category: 'cartridges', image: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400&h=400&fit=crop' },
+            { id: 10, name: 'Ursa Nano 0.6Ω', description: 'Kartridż 0.6Ω', price: 25, category: 'cartridges', image: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400&h=400&fit=crop' },
+            { id: 11, name: 'XROS 5 Mini', description: 'Podsystem + liquid', price: 140, category: 'pods', image: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400&h=400&fit=crop' },
+            { id: 12, name: 'XROS 4 Mini', description: 'Podsystem + liquid', price: 130, category: 'pods', image: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400&h=400&fit=crop' },
+            { id: 13, name: 'ElfBar IceKing', description: 'Jednorazówka', price: 90, category: 'disposables', image: 'https://images.unsplash.com/photo-1606811971618-4486c80581a3?w=400&h=400&fit=crop' },
+            { id: 14, name: 'ElfBar NicKing', description: 'Jednorazówka', price: 90, category: 'disposables', image: 'https://images.unsplash.com/photo-1606811971618-4486c80581a3?w=400&h=400&fit=crop' },
+            { id: 15, name: 'ElfBar Raya d3', description: 'Jednorazówka', price: 90, category: 'disposables', image: 'https://images.unsplash.com/photo-1606811971618-4486c80581a3?w=400&h=400&fit=crop' },
+            { id: 16, name: 'ElfBar Gh33000pro', description: 'Jednorazówka', price: 90, category: 'disposables', image: 'https://images.unsplash.com/photo-1606811971618-4486c80581a3?w=400&h=400&fit=crop' },
+            { id: 17, name: 'Elfbar MoonNight', description: 'Jednorazówka', price: 80, category: 'disposables', image: 'https://images.unsplash.com/photo-1606811971618-4486c80581a3?w=400&h=400&fit=crop' },
+            { id: 18, name: 'ElfBar Bc20000', description: 'Jednorazówka', price: 70, category: 'disposables', image: 'https://images.unsplash.com/photo-1606811971618-4486c80581a3?w=400&h=400&fit=crop' }
+        ];
+
+        // Завантаження товарів з CRM (якщо підключено)
+        function loadProductsFromCRM() {
+            if (!CRM_API_URL || !CRM_API_TOKEN) {
+                productsData = [...productsDataStatic];
+                renderProducts();
+                return;
+            }
+            const url = CRM_API_URL.replace(/\/$/, '') + '/api/bot/products';
+            fetch(url, { headers: { 'X-API-Key': CRM_API_TOKEN, 'Accept': 'application/json' } })
+                .then(r => r.json())
+                .then(data => {
+                    const list = (data.data || data) || [];
+                    productsData = list.map((p, i) => ({
+                        id: p.id,
+                        name: p.name,
+                        description: p.name,
+                        price: Number(p.price) || 0,
+                        category: ['liquids', 'cartridges', 'pods', 'disposables'][i % 4],
+                        image: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400&h=400&fit=crop'
+                    }));
+                    if (productsData.length === 0) productsData = [...productsDataStatic];
+                    renderProducts();
+                })
+                .catch(() => { productsData = [...productsDataStatic]; renderProducts(); });
+        }
+
+        // Initialize products on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            productsData = [...productsDataStatic];
+            loadProductsFromCRM();
+
+            // Set language selector
+            document.getElementById('languageSelect').value = currentLanguage;
+            document.documentElement.lang = currentLanguage;
+            
+            // Initialize translations
+            updateTranslations();
+            
+            // Search functionality
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                currentSearch = e.target.value.toLowerCase();
+                if (currentSearch) {
+                    productsToShow = 999; // Show all when searching
+                } else {
+                    productsToShow = 6; // Reset to initial limit
+                }
+                applyFilters();
+            });
+        });
+
+        function renderProducts() {
+            let filteredProducts = [...productsData];
+
+            // Filter by category
+            if (currentCategory !== 'all') {
+                filteredProducts = filteredProducts.filter(p => p.category === currentCategory);
+            }
+
+            // Filter by search
+            if (currentSearch) {
+                filteredProducts = filteredProducts.filter(p => 
+                    p.name.toLowerCase().includes(currentSearch) ||
+                    p.description.toLowerCase().includes(currentSearch)
+                );
+            }
+
+            // Filter by price
+            if (currentPriceFilter !== 'all') {
+                filteredProducts = filteredProducts.filter(p => {
+                    if (currentPriceFilter === '100+') {
+                        return p.price >= 100;
+                    }
+                    const [min, max] = currentPriceFilter.split('-').map(v => parseInt(v));
+                    return p.price >= min && p.price <= max;
+                });
+            }
+
+            // Sort products
+            filteredProducts.sort((a, b) => {
+                switch(currentSort) {
+                    case 'price-asc':
+                        return a.price - b.price;
+                    case 'price-desc':
+                        return b.price - a.price;
+                    case 'name-asc':
+                        return a.name.localeCompare(b.name, 'pl');
+                    case 'name-desc':
+                        return b.name.localeCompare(a.name, 'pl');
+                    default:
+                        return 0;
+                }
+            });
+
+            // Save all filtered products
+            allFilteredProducts = filteredProducts;
+
+            // Render products
+            const productsContainer = document.getElementById('products');
+            const loadMoreContainer = document.getElementById('loadMoreContainer');
+            
+            if (filteredProducts.length === 0) {
+                productsContainer.innerHTML = `<div class="no-products"><p>${t('noProducts')}</p></div>`;
+                loadMoreContainer.style.display = 'none';
+                return;
+            }
+
+            // Show only limited products on main page (when no filters applied)
+            const productsToDisplay = (currentCategory === 'all' && !currentSearch && currentPriceFilter === 'all' && currentSort === 'default') 
+                ? filteredProducts.slice(0, productsToShow) 
+                : filteredProducts;
+
+            productsContainer.innerHTML = productsToDisplay.map(product => `
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300?text=Product'">
+                    </div>
+                    <h3>${product.name}</h3>
+                    <p class="product-description">${product.description}</p>
+                    <div class="product-footer">
+                        <span class="price">${product.price} zł</span>
+                        <button class="btn-add" onclick="addToCart(${product.id}, '${product.name}', ${product.price})">${t('add')}</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Show "Load More" button if there are more products and on main page
+            if (filteredProducts.length > productsToShow && currentCategory === 'all' && !currentSearch && currentPriceFilter === 'all' && currentSort === 'default') {
+                loadMoreContainer.style.display = 'flex';
+                loadMoreContainer.querySelector('.btn-load-more').textContent = t('loadMore');
+            } else {
+                loadMoreContainer.style.display = 'none';
+            }
+        }
+
+        function filterByCategory(category) {
+            currentCategory = category;
+            productsToShow = 6; // Reset to initial limit
+            document.querySelectorAll('.category-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            if (category !== 'all') {
+                document.querySelector(`[data-category="${category}"]`).classList.add('active');
+                productsToShow = 999; // Show all when category selected
+            }
+            applyFilters();
+        }
+
+        function applyFilters() {
+            currentSort = document.getElementById('sortFilter').value;
+            currentPriceFilter = document.getElementById('priceFilter').value;
+            // Show all products when filters are applied
+            if (currentCategory === 'all' && !currentSearch && currentPriceFilter === 'all' && currentSort === 'default') {
+                productsToShow = 6;
+            } else {
+                productsToShow = 999; // Show all when filters applied
+            }
+            renderProducts();
+        }
+
+        function resetFilters() {
+            currentCategory = 'all';
+            currentSearch = '';
+            currentSort = 'default';
+            currentPriceFilter = 'all';
+            productsToShow = 6;
+            
+            document.getElementById('searchInput').value = '';
+            document.getElementById('sortFilter').value = 'default';
+            document.getElementById('priceFilter').value = 'all';
+            
+            document.querySelectorAll('.category-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            renderProducts();
+        }
+
+        function loadMoreProducts() {
+            productsToShow = allFilteredProducts.length;
+            renderProducts();
+        }
+
+        function addToCart(id, name, price) {
+            const existingItem = cart.find(item => item.id === id);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ id, name, price, quantity: 1 });
+            }
+            
+            updateCartCount();
+            showNotification(`${name} ${t('addedToCart')}`);
+        }
+
+        function updateCartCount() {
+            cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cartCount').textContent = cartCount;
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 2000);
+        }
+
+        document.getElementById('cartIcon').addEventListener('click', function() {
+            openCart();
+        });
+
+        function openCart() {
+            const modal = document.getElementById('cartModal');
+            modal.style.display = 'block';
+            renderCart();
+        }
+
+        function closeCart() {
+            document.getElementById('cartModal').style.display = 'none';
+        }
+
+        function renderCart() {
+            const cartItems = document.getElementById('cartItems');
+            const totalPrice = document.getElementById('totalPrice');
+            
+            if (cart.length === 0) {
+                cartItems.innerHTML = `<p class="empty-cart">${t('emptyCart')}</p>`;
+                totalPrice.textContent = '0';
+                return;
+            }
+            
+            let total = 0;
+            cartItems.innerHTML = cart.map(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                return `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <h4>${item.name}</h4>
+                            <p>${item.price} zł × ${item.quantity}</p>
+                        </div>
+                        <div class="cart-item-controls">
+                            <button onclick="decreaseQuantity(${item.id})">-</button>
+                            <span>${item.quantity}</span>
+                            <button onclick="increaseQuantity(${item.id})">+</button>
+                            <button class="btn-remove" onclick="removeFromCart(${item.id})">🗑️</button>
+                        </div>
+                        <div class="cart-item-total">${itemTotal} zł</div>
+                    </div>
+                `;
+            }).join('');
+            
+            totalPrice.textContent = total;
+        }
+
+        function increaseQuantity(id) {
+            const item = cart.find(item => item.id === id);
+            if (item) {
+                item.quantity += 1;
+                updateCartCount();
+                renderCart();
+            }
+        }
+
+        function decreaseQuantity(id) {
+            const item = cart.find(item => item.id === id);
+            if (item && item.quantity > 1) {
+                item.quantity -= 1;
+                updateCartCount();
+                renderCart();
+            }
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            updateCartCount();
+            renderCart();
+        }
+
+        function checkout() {
+            if (cart.length === 0) {
+                alert(t('cartEmpty'));
+                return;
+            }
+            
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const orderDetails = cart.map(item => 
+                `${item.name} × ${item.quantity} = ${item.price * item.quantity} zł`
+            ).join('\n');
+
+            // Відправка замовлення в CRM (якщо підключено)
+            if (CRM_API_URL && CRM_API_TOKEN) {
+                const payload = {
+                    items: cart.map(item => ({
+                        product_id: item.id,
+                        quantity: item.quantity,
+                        sale_price: item.price
+                    })),
+                    telegram_user_id: (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user && window.Telegram.WebApp.initDataUnsafe.user.id) ? String(window.Telegram.WebApp.initDataUnsafe.user.id) : null
+                };
+                const url = CRM_API_URL.replace(/\/$/, '') + '/api/orders';
+                fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-API-Key': CRM_API_TOKEN, 'Accept': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+                .then(r => r.json().then(data => ({ ok: r.ok, data })))
+                .then(({ ok, data }) => {
+                    if (ok && (data.order_id || data.message)) {
+                        showNotification(t('orderPlaced') + ' (CRM #' + (data.order_id || '') + ')');
+                        cart = []; updateCartCount(); renderCart(); closeCart();
+                        if (window.Telegram && window.Telegram.WebApp) {
+                            try { window.Telegram.WebApp.sendData(JSON.stringify({ action: 'checkout', order_id: data.order_id, total })); } catch (e) {}
+                        }
+                    } else {
+                        alert(data.message || 'Помилка відправки замовлення');
+                    }
+                })
+                .catch(err => alert('Помилка з\'єднання з CRM: ' + (err.message || 'перевірте URL та токен')));
+                return;
+            }
+            
+            // Якщо використовується Telegram WebApp (без CRM)
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.sendData(JSON.stringify({
+                    action: 'checkout',
+                    items: cart,
+                    total: total
+                }));
+            } else {
+                alert(`${t('orderPlaced')}\n\n${orderDetails}\n\n${t('total')}: ${total} zł`);
+                cart = []; updateCartCount(); renderCart(); closeCart();
+            }
+        }
+
+        // Закрити модальне вікно при кліку поза ним
+        window.onclick = function(event) {
+            const modal = document.getElementById('cartModal');
+            if (event.target == modal) {
+                closeCart();
+            }
+        }
+
+        function contactManager() {
+            // Відкрити Telegram @blvckPL
+            const telegramUrl = 'https://t.me/blvckPL';
+            
+            // Якщо використовується Telegram WebApp
+            if (window.Telegram && window.Telegram.WebApp) {
+                // Спробувати відкрити через Telegram
+                window.Telegram.WebApp.openLink(telegramUrl);
+            } else {
+                // Для звичайного браузера
+                window.open(telegramUrl, '_blank');
+            }
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const toggle = document.getElementById('mobileMenuToggle');
+            menu.classList.toggle('active');
+            toggle.classList.toggle('active');
+        }
+
+        function closeMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const toggle = document.getElementById('mobileMenuToggle');
+            menu.classList.remove('active');
+            toggle.classList.remove('active');
+        }
+
+        // Закрити меню при кліку поза ним
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('mobileMenu');
+            const toggle = document.getElementById('mobileMenuToggle');
+            if (!menu.contains(event.target) && !toggle.contains(event.target)) {
+                closeMobileMenu();
+            }
+        });
+    </script>
+</body>
+</html>
