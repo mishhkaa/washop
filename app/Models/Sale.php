@@ -18,6 +18,7 @@ class Sale extends Model
         'source',
         'telegram_user_id',
         'telegram_username',
+        'delivery_method',
     ];
 
     protected $casts = [

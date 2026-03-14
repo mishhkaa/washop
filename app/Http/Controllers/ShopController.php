@@ -10,6 +10,7 @@ use App\Models\ShopCategory;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class ShopController extends Controller
 {
@@ -24,31 +25,19 @@ class ShopController extends Controller
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        $priceFilter = $request->get('price', 'all');
-        if ($priceFilter !== 'all') {
-            if ($priceFilter === '100+') {
-                $query->where('purchase_price', '>=', 100);
-            } else {
-                $parts = explode('-', $priceFilter);
-                if (count($parts) === 2 && is_numeric($parts[0]) && is_numeric($parts[1])) {
-                    $query->whereBetween('purchase_price', [(float) $parts[0], (float) $parts[1]]);
-                }
-            }
-        }
-
         $sort = $request->get('sort', 'default');
         switch ($sort) {
-            case 'price-asc':
-                $query->orderBy('purchase_price', 'asc');
-                break;
-            case 'price-desc':
-                $query->orderBy('purchase_price', 'desc');
-                break;
             case 'name-asc':
                 $query->orderBy('name', 'asc');
                 break;
             case 'name-desc':
                 $query->orderBy('name', 'desc');
+                break;
+            case 'price-asc':
+                $query->orderBy('purchase_price', 'asc');
+                break;
+            case 'price-desc':
+                $query->orderBy('purchase_price', 'desc');
                 break;
             default:
                 $query->orderBy('name', 'asc');
@@ -59,23 +48,6 @@ class ShopController extends Controller
         $categories = ShopCategory::orderBy('sort_order')->orderBy('name')->get();
 
         return view('shop.index', compact('products', 'categories'));
-    }
-
-    public function cart(Request $request)
-    {
-        $cart = $request->session()->get('shop_cart', []);
-        $productIds = array_keys($cart);
-        $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
-        $items = [];
-        foreach ($cart as $id => $qty) {
-            if (isset($products[$id])) {
-                $items[] = (object)[
-                    'product' => $products[$id],
-                    'quantity' => (int) $qty,
-                ];
-            }
-        }
-        return view('shop.cart', compact('items'));
     }
 
     public function addToCart(Request $request)
@@ -90,7 +62,7 @@ class ShopController extends Controller
         if ($request->wantsJson()) {
             return response()->json(['ok' => true, 'count' => array_sum($cart)]);
         }
-        return redirect()->route('shop.cart')->with('success', 'Додано до кошика');
+        return redirect()->route('shop.cart')->with('success', __('Added to cart'));
     }
 
     public function updateCart(Request $request)
@@ -127,7 +99,7 @@ class ShopController extends Controller
     {
         $cart = $request->session()->get('shop_cart', []);
         if (empty($cart)) {
-            return redirect()->route('shop.home')->with('message', 'Кошик порожній');
+            return redirect()->route('shop.home')->with('message', __('Cart is empty'));
         }
         $productIds = array_keys($cart);
         $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
@@ -142,16 +114,22 @@ class ShopController extends Controller
 
     public function checkout(Request $request)
     {
+        $request->validate([
+            'delivery_method' => 'required|in:paczkomat,osobisty_odbior',
+        ], [
+            'delivery_method.required' => __('Please choose delivery method'),
+            'delivery_method.in' => __('Please choose delivery method'),
+        ]);
         $cart = $request->session()->get('shop_cart', []);
         if (empty($cart)) {
-            return redirect()->route('shop.home')->with('message', 'Кошик порожній');
+            return redirect()->route('shop.home')->with('message', __('Cart is empty'));
         }
         $productIds = array_keys($cart);
         $products = Product::whereIn('id', $productIds)->where('available_in_bot', true)->get()->keyBy('id');
         $orderItems = [];
         foreach ($cart as $id => $qty) {
             if (!isset($products[$id]) || ($products[$id]->quantity ?? 0) < $qty) {
-                return back()->with('error', 'Недостатньо товару або товар недоступний.');
+                return back()->with('error', __('Insufficient product'));
             }
             $orderItems[] = ['product' => $products[$id], 'quantity' => (int) $qty];
         }
@@ -186,7 +164,7 @@ class ShopController extends Controller
                     $request->input('telegram_user_id'),
                     $request->input('telegram_username')
                 );
-                $sale = Sale::create([
+                $saleData = [
                     'manager_id' => $managerId,
                     'client_id' => $client?->id,
                     'product_id' => null,
@@ -198,7 +176,11 @@ class ShopController extends Controller
                     'source' => 'bot',
                     'telegram_user_id' => $request->input('telegram_user_id'),
                     'telegram_username' => $request->input('telegram_username'),
-                ]);
+                ];
+                if (Schema::hasColumn('sales', 'delivery_method')) {
+                    $saleData['delivery_method'] = $request->input('delivery_method');
+                }
+                $sale = Sale::create($saleData);
                 foreach ($saleItemsData as $data) {
                     SaleItem::create([
                         'sale_id' => $sale->id,
@@ -215,9 +197,9 @@ class ShopController extends Controller
             });
 
             $request->session()->forget('shop_cart');
-            return redirect()->route('shop.home')->with('success', 'Замовлення #' . $sale->id . ' оформлено. Дякуємо!');
+            return redirect()->route('shop.home')->with('success', __('Order :id placed thanks', ['id' => $sale->id]));
         } catch (\Throwable $e) {
-            return back()->with('error', 'Помилка: ' . $e->getMessage());
+            return back()->with('error', __('Error') . ': ' . $e->getMessage());
         }
     }
 }

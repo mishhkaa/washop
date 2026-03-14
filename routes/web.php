@@ -20,8 +20,15 @@ use App\Http\Controllers\Admin\ShopCategoryController;
 use App\Http\Controllers\ShopController;
 
 // ========== МАГАЗИН (головний сайт) — корінь ==========
+Route::get('/locale/{locale}', function (string $locale) {
+    if (in_array($locale, ['uk', 'pl', 'en'], true)) {
+        session(['locale' => $locale]);
+    }
+    return redirect()->back();
+})->name('locale.switch');
+
 Route::get('/', [ShopController::class, 'index'])->name('shop.home');
-Route::get('/cart', [ShopController::class, 'cart'])->name('shop.cart');
+Route::get('/cart', fn () => redirect()->route('shop.home'))->name('shop.cart');
 Route::post('/cart/add', [ShopController::class, 'addToCart'])->name('shop.cart.add');
 Route::post('/cart/update', [ShopController::class, 'updateCart'])->name('shop.cart.update');
 Route::post('/cart/remove', [ShopController::class, 'removeFromCart'])->name('shop.cart.remove');

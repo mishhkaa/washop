@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'manager' => \App\Http\Middleware\EnsureUserIsManager::class,
             'api.token' => \App\Http\Middleware\ValidateShopApiToken::class,
         ]);
+        $middleware->web(append: [\App\Http\Middleware\SetShopLocale::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

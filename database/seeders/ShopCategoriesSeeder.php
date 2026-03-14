@@ -10,14 +10,14 @@ class ShopCategoriesSeeder extends Seeder
     public function run(): void
     {
         $items = [
-            ['name' => 'Підсистеми', 'slug' => 'pods', 'sort_order' => 1],
-            ['name' => 'Одноразки', 'slug' => 'disposables', 'sort_order' => 2],
-            ['name' => 'Рідини', 'slug' => 'liquids', 'sort_order' => 3],
-            ['name' => 'Картриджі', 'slug' => 'cartridges', 'sort_order' => 4],
+            ['name' => 'Pody', 'slug' => 'pods', 'sort_order' => 1],
+            ['name' => 'Jednorazówki', 'slug' => 'disposables', 'sort_order' => 2],
+            ['name' => 'Liquidy', 'slug' => 'liquids', 'sort_order' => 3],
+            ['name' => 'Kartridże', 'slug' => 'cartridges', 'sort_order' => 4],
         ];
 
         foreach ($items as $item) {
-            ShopCategory::firstOrCreate(
+            ShopCategory::updateOrCreate(
                 ['slug' => $item['slug']],
                 ['name' => $item['name'], 'sort_order' => $item['sort_order']]
             );

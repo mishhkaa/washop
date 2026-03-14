@@ -90,6 +90,7 @@ chmod 664 database/database.sqlite
 ```bash
 php artisan migrate --force
 ```
+(Міграція додає колонку `delivery_method` у `sales` — Paczkomat / Osobisty odbiór.)
 
 **Сиди для товарів магазину та бота (обов’язково, щоб на сайті/в боті були товари):**
 ```bash
@@ -98,7 +99,7 @@ php artisan db:seed --class=BotProductsSeeder --force
 
 Якщо не запустити `BotProductsSeeder`, на проді буде **«немає товарів»**: магазин і API бота показують лише товари з `available_in_bot = true` та `quantity > 0`. Цей сидер додає приклад товарів з такими позначками.
 
-**Категорії магазину (Підсистеми, Одноразки, Рідини, Картриджі):** їх додає `ShopCategoriesSeeder`. Він викликається при повному сиді:
+**Категорії магазину (Pody, Jednorazówki, Liquidy, Kartridże, мова — польська):** їх додає/оновлює `ShopCategoriesSeeder`. Він викликається при повному сиді:
 ```bash
 php artisan db:seed --force
 ```
