@@ -65,39 +65,55 @@ class TelegramOrderNotification
             $price = (float) $item->sale_price;
             $sum = $price * $qty;
             $total += $sum;
-            $lines[] = "• {$name} × {$qty} = " . number_format($sum, 2) . ' грн';
+            $lines[] = '• ' . self::escapeHtml($name) . " × {$qty} = " . number_format($sum, 2) . ' zł';
         }
         $lines[] = '';
-        $lines[] = '💰 <b>Разом: ' . number_format($total, 2) . ' грн</b>';
+        $lines[] = '💰 <b>Разом: ' . number_format($total, 2) . ' zł</b>';
+        $lines[] = '';
 
+        $lines[] = '<b>👤 Клієнт</b>';
         if ($sale->telegram_username) {
-            $lines[] = '👤 @' . ltrim($sale->telegram_username, '@');
+            $lines[] = '  @' . self::escapeHtml(ltrim($sale->telegram_username, '@'));
         }
         if ($sale->telegram_user_id) {
-            $lines[] = 'ID: ' . $sale->telegram_user_id;
+            $lines[] = '  ID: <code>' . self::escapeHtml((string) $sale->telegram_user_id) . '</code>';
         }
-        if ($sale->client) {
-            $lines[] = 'Клієнт: ' . ($sale->client->name ?: '—');
+        if ($sale->client && $sale->client->name) {
+            $lines[] = '  ' . self::escapeHtml($sale->client->name);
         }
+        if (empty(array_filter([$sale->telegram_username, $sale->telegram_user_id, $sale->client?->name]))) {
+            $lines[] = '  —';
+        }
+        $lines[] = '';
+
         if (\Illuminate\Support\Facades\Schema::hasColumn('sales', 'delivery_method') && $sale->delivery_method) {
-            $delivery = $sale->delivery_method === 'paczkomat' ? 'Paczkomat' : 'Osobisty odbiór';
-            $lines[] = 'Доставка: ' . $delivery;
-            if ($sale->delivery_method === 'paczkomat' && \Illuminate\Support\Facades\Schema::hasColumn('sales', 'delivery_paczkomat_code') && $sale->delivery_paczkomat_code) {
-                $lines[] = '📦 Paczkomat: ' . $sale->delivery_paczkomat_code;
-            }
-            if ($sale->delivery_method === 'osobisty_odbior') {
+            $lines[] = '<b>📦 Доставка</b>';
+            if ($sale->delivery_method === 'paczkomat') {
+                $lines[] = '  Paczkomat InPost';
+                if (\Illuminate\Support\Facades\Schema::hasColumn('sales', 'delivery_paczkomat_code') && $sale->delivery_paczkomat_code) {
+                    $lines[] = '  Код: <code>' . self::escapeHtml($sale->delivery_paczkomat_code) . '</code>';
+                    $lines[] = '  <a href="https://inpost.pl/znajdz-paczkomat">Znajdź paczkomat na mapie</a>';
+                }
+            } else {
+                $lines[] = '  Osobisty odbiór';
                 if (\Illuminate\Support\Facades\Schema::hasColumn('sales', 'delivery_pickup_name') && $sale->delivery_pickup_name) {
-                    $lines[] = '👤 Imię: ' . $sale->delivery_pickup_name;
+                    $lines[] = '  👤 Imię: ' . self::escapeHtml($sale->delivery_pickup_name);
                 }
                 if (\Illuminate\Support\Facades\Schema::hasColumn('sales', 'delivery_pickup_phone') && $sale->delivery_pickup_phone) {
-                    $lines[] = '📞 Tel: ' . $sale->delivery_pickup_phone;
+                    $lines[] = '  📞 Tel: ' . self::escapeHtml($sale->delivery_pickup_phone);
                 }
                 if (\Illuminate\Support\Facades\Schema::hasColumn('sales', 'delivery_pickup_district') && $sale->delivery_pickup_district) {
-                    $lines[] = '📍 Rejon: ' . $sale->delivery_pickup_district;
+                    $lines[] = '  📍 Rejon: ' . self::escapeHtml($sale->delivery_pickup_district);
                 }
             }
+            $lines[] = '';
         }
 
         return implode("\n", $lines);
+    }
+
+    private static function escapeHtml(string $s): string
+    {
+        return htmlspecialchars($s, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }
 }

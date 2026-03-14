@@ -26,6 +26,14 @@
         .lang-switcher__drop a { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; color: #94a3b8; text-decoration: none; }
         .lang-switcher__drop a:hover { color: #fff; background: rgba(255,255,255,0.1); }
         .lang-switcher__drop a.active { color: #93c5fd; background: rgba(59,130,246,0.2); }
+        /* Чекаут: примусово темний стиль полів у Telegram WebApp */
+        .checkout-page .checkout-label { color: #e2e8f0 !important; font-weight: 600 !important; }
+        .checkout-page .checkout-input,
+        .checkout-page input[type="text"],
+        .checkout-page input[type="number"] { background: #0f172a !important; color: #e2e8f0 !important; border: 1px solid #334155 !important; border-radius: 10px !important; padding: 12px 16px !important; -webkit-appearance: none !important; appearance: none !important; }
+        .checkout-page .checkout-input::placeholder { color: #64748b !important; }
+        .checkout-page .checkout-input:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 3px rgba(59,130,246,0.2) !important; outline: none !important; }
+        .checkout-page .checkout-link-inline { color: #60a5fa !important; }
     </style>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
@@ -49,8 +57,8 @@
                     @php
                         $locale = app()->getLocale();
                         $langs = [
-                            'uk' => ['flag' => '🇺🇦', 'code' => 'УКР', 'title' => 'Українська'],
                             'pl' => ['flag' => '🇵🇱', 'code' => 'POL', 'title' => 'Polski'],
+                            'uk' => ['flag' => '🇺🇦', 'code' => 'УКР', 'title' => 'Українська'],
                             'en' => ['flag' => '🇬🇧', 'code' => 'ENG', 'title' => 'English'],
                         ];
                         $current = $langs[$locale] ?? $langs['pl'];

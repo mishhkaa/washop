@@ -80,7 +80,7 @@
                 <p class="checkout-error">{{ $errors->first('delivery_pickup_name') }}</p>
                 @endif
                 <label class="checkout-label" for="delivery_pickup_phone">{{ __('Phone') }}</label>
-                <input type="text" name="delivery_pickup_phone" id="delivery_pickup_phone" class="checkout-input" value="{{ old('delivery_pickup_phone') }}" maxlength="64" placeholder="+48 ...">
+                <input type="text" name="delivery_pickup_phone" id="delivery_pickup_phone" class="checkout-input" value="{{ old('delivery_pickup_phone') }}" maxlength="64" placeholder="{{ __('Phone placeholder') }}">
                 @if($errors->has('delivery_pickup_phone'))
                 <p class="checkout-error">{{ $errors->first('delivery_pickup_phone') }}</p>
                 @endif
