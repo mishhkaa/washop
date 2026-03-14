@@ -14,11 +14,16 @@ return new class extends Migration
     {
         // Виправляємо foreign key для manager_id в таблиці sales
         // Він повинен посилатися на таблицю users, а не managers
-        
+
         if (DB::getDriverName() === 'sqlite') {
-            // Для SQLite потрібно пересоздати таблицю
+            // Якщо sales вже має sale_price — міграція вже застосована (або через цю, або через add_sale_price_to_sales_if_missing)
+            if (Schema::hasColumn('sales', 'sale_price')) {
+                return;
+            }
+            // Видаляємо залишок від попереднього незавершеного запуску
+            DB::statement('DROP TABLE IF EXISTS sales_new');
             DB::statement('PRAGMA foreign_keys=off;');
-            
+
             DB::statement('
                 CREATE TABLE sales_new (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,18 +38,21 @@ return new class extends Migration
                     FOREIGN KEY(manager_id) REFERENCES users(id) ON DELETE CASCADE
                 )
             ');
-            
-            DB::statement('INSERT INTO sales_new SELECT * FROM sales;');
+            // Явний список колонок: sales має price, sales_new — sale_price і profit
+            DB::statement('INSERT INTO sales_new (id, product_id, manager_id, quantity, sale_price, profit, created_at, updated_at) SELECT id, product_id, manager_id, quantity, price, 0, created_at, updated_at FROM sales');
             DB::statement('DROP TABLE sales;');
             DB::statement('ALTER TABLE sales_new RENAME TO sales;');
-            
+
             DB::statement('PRAGMA foreign_keys=on;');
         } else {
             // Для інших БД (MySQL, PostgreSQL) просто видаляємо і додаємо foreign key
-            Schema::table('sales', function (Blueprint $table) {
-                $table->dropForeign(['manager_id']);
-            });
-            
+            try {
+                Schema::table('sales', function (Blueprint $table) {
+                    $table->dropForeign(['manager_id']);
+                });
+            } catch (\Throwable $e) {
+                // FK вже правильний або відсутній
+            }
             Schema::table('sales', function (Blueprint $table) {
                 $table->foreign('manager_id')
                     ->references('id')
