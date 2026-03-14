@@ -85,7 +85,7 @@
                 <img src="{{ $product->image_path ? $product->image_url : 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400&h=400&fit=crop' }}" alt="{{ $product->name }}" onerror="this.src='https://via.placeholder.com/300?text=Product'">
             </div>
             <h3>{{ $product->name }}</h3>
-            <p class="product-description">В наявності: {{ $product->quantity }} шт.</p>
+            <p class="product-description">{{ $product->description ? Str::limit($product->description, 50) : 'В наявності: ' . $product->quantity . ' шт.' }}</p>
             <div class="product-footer">
                 <span class="price">{{ number_format($product->purchase_price ?? 0, 0) }} zł</span>
                 <form action="{{ route('shop.cart.add') }}" method="POST" class="inline" style="display: inline;">
@@ -103,16 +103,16 @@
     @endforelse
 </section>
 
-<section id="about" style="padding: 40px 20px; max-width: 800px; margin: 0 auto;">
-    <h2 style="margin-bottom: 15px;">Про нас</h2>
-    <p style="color: #636e72;">CloudCity — зручний вибір товарів. Обирайте категорію, додавайте в кошик та оформлюйте замовлення.</p>
+<section id="about" class="landing-section" style="padding: 40px 20px; max-width: 800px; margin: 0 auto;">
+    <h2 style="margin-bottom: 15px; color: #f1f5f9;">Про нас</h2>
+    <p style="color: #94a3b8;">CloudCity — зручний вибір товарів. Обирайте категорію, додавайте в кошик та оформлюйте замовлення.</p>
 </section>
-<section id="delivery" style="padding: 20px; max-width: 800px; margin: 0 auto;">
-    <h2 style="margin-bottom: 15px;">Доставка</h2>
-    <p style="color: #636e72;">Умови доставки та оплати уточнюйте у менеджера.</p>
+<section id="delivery" class="landing-section" style="padding: 20px; max-width: 800px; margin: 0 auto;">
+    <h2 style="margin-bottom: 15px; color: #f1f5f9;">Доставка</h2>
+    <p style="color: #94a3b8;">Умови доставки та оплати уточнюйте у менеджера.</p>
 </section>
-<section id="contacts" style="padding: 20px; max-width: 800px; margin: 0 auto;">
-    <h2 style="margin-bottom: 15px;">Контакти</h2>
-    <p style="color: #636e72;">Телеграм: <a href="https://t.me/blvckPL" target="_blank" rel="noopener">@blvckPL</a></p>
+<section id="contacts" class="landing-section" style="padding: 20px; max-width: 800px; margin: 0 auto;">
+    <h2 style="margin-bottom: 15px; color: #f1f5f9;">Контакти</h2>
+    <p style="color: #94a3b8;">Телеграм: <a href="https://t.me/blvckPL" target="_blank" rel="noopener" style="color: #60a5fa;">@blvckPL</a></p>
 </section>
 @endsection

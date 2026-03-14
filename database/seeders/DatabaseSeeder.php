@@ -16,6 +16,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call([ShopCategoriesSeeder::class]);
+
         $defaultPassword = Hash::make('password');
 
         // Адмін для першого входу в CRM (зміни пароль після деплою)

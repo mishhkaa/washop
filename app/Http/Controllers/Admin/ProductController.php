@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\ShopCategory;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
@@ -59,6 +60,7 @@ class ProductController extends Controller
         $request->merge(['shop_category' => $request->input('shop_category') ?: null]);
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:5000',
             'purchase_price' => 'required|numeric|min:0',
             'quantity' => 'nullable|integer|min:0',
             'manager_id' => 'nullable|exists:users,id',
@@ -67,6 +69,9 @@ class ProductController extends Controller
         ]);
         $validated['available_in_bot'] = $request->boolean('available_in_bot');
         $validated['shop_category'] = $request->input('shop_category') ?: null;
+        if (! Schema::hasColumn('products', 'description')) {
+            unset($validated['description']);
+        }
 
         $imageError = null;
         if ($request->hasFile('image')) {
@@ -122,6 +127,7 @@ class ProductController extends Controller
         $request->merge(['shop_category' => $request->input('shop_category') ?: null]);
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:5000',
             'purchase_price' => 'required|numeric|min:0',
             'quantity' => 'nullable|integer|min:0',
             'manager_id' => 'nullable|exists:users,id',
@@ -130,6 +136,9 @@ class ProductController extends Controller
         ]);
         $validated['available_in_bot'] = $request->boolean('available_in_bot');
         $validated['shop_category'] = $request->input('shop_category') ?: null;
+        if (! Schema::hasColumn('products', 'description')) {
+            unset($validated['description']);
+        }
 
         $imageError = null;
         if ($request->hasFile('image')) {

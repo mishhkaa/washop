@@ -6,6 +6,18 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Магазин') - CloudCity</title>
     <link rel="stylesheet" href="{{ asset('css/shop.css') }}">
+    <style>
+        /* Критичні стилі: завжди темний фон і базові кольори, навіть якщо shop.css не завантажиться */
+        body { background: #0f172a !important; color: #e2e8f0 !important; margin: 0; padding: 0; padding-top: 52px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .container { background: #0f172a !important; min-height: 100vh; }
+        .cart-page, .cart-page-title { color: #f1f5f9 !important; }
+        .empty-cart-wrap { background: #0f172a !important; min-height: 60vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+        .empty-cart-inner { text-align: center; max-width: 320px; }
+        .empty-cart-title { color: #f1f5f9 !important; font-size: 20px; font-weight: 600; margin: 0 0 10px 0; }
+        .empty-cart-text { color: #94a3b8 !important; font-size: 14px; margin: 0 0 24px 0; }
+        .btn-empty-cart { display: inline-block; padding: 12px 24px; background: #2563eb; color: #fff !important; border-radius: 6px; font-size: 15px; text-decoration: none; }
+        .btn-empty-cart:hover { background: #3b82f6; color: #fff !important; }
+    </style>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>

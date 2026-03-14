@@ -1,0 +1,16 @@
+[Unit]
+Description=WaShop Telegram Bot
+After=network.target
+
+[Service]
+Type=simple
+User=administrator
+Group=administrator
+WorkingDirectory=/home/administrator/web/mycrm.hookly.org/public_html/washop
+EnvironmentFile=/home/administrator/web/mycrm.hookly.org/public_html/washop/.env.bot
+ExecStart=/home/administrator/web/mycrm.hookly.org/public_html/washop/venv/bin/python3 bot.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

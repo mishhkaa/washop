@@ -49,6 +49,11 @@
             </div>
 
             <div class="form-group">
+                <label for="description">Опис товару</label>
+                <textarea id="description" name="description" rows="4" placeholder="Короткий опис для картки товару на сайті">{{ old('description', $product->description) }}</textarea>
+            </div>
+
+            <div class="form-group">
                 <label for="purchase_price">Ціна закупівлі (zł)</label>
                 <input type="number" id="purchase_price" name="purchase_price" step="0.01" min="0" value="{{ old('purchase_price', $product->purchase_price) }}" required>
             </div>

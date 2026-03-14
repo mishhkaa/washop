@@ -98,6 +98,12 @@ php artisan db:seed --class=BotProductsSeeder --force
 
 Якщо не запустити `BotProductsSeeder`, на проді буде **«немає товарів»**: магазин і API бота показують лише товари з `available_in_bot = true` та `quantity > 0`. Цей сидер додає приклад товарів з такими позначками.
 
+**Категорії магазину (Підсистеми, Одноразки, Рідини, Картриджі):** їх додає `ShopCategoriesSeeder`. Він викликається при повному сиді:
+```bash
+php artisan db:seed --force
+```
+Якщо на проді категорій немає — виконай цю команду (або `php artisan db:seed --class=ShopCategoriesSeeder --force`).
+
 (Опційно) інші сиди:
 ```bash
 php artisan db:seed --force
@@ -235,6 +241,76 @@ python3 bot.py
 ```
 
 **Важливо:** у боті в коді вказаний URL WebApp — він має збігатися з твоїм доменом (`SHOP_WEBAPP_URL`). У BotFather у кнопці Web App вкажи той самий URL (наприклад `https://твій-домен.com`).
+
+### Як запустити бота (покроково)
+
+1. **Отримай токен бота:** у Telegram знайди [@BotFather](https://t.me/BotFather), відправ `/newbot`, придумай ім’я — отримаєш токен на кшталт `123456:ABC-DEF...`.
+
+2. **Налаштуй Web App у BotFather:**  
+   `/mybots` → вибери свого бота → **Bot Settings** → **Menu Button** або **Configure inline button** → вкажи URL магазину, наприклад `https://mycrm.hookly.org/` (без `/crm` — це головна сторінка магазину).
+
+3. **На сервері (або на своєму ПК для тесту):**
+```bash
+cd /home/administrator/web/mycrm.hookly.org/public_html/washop
+
+# Віртуальне середовище (один раз)
+python3 -m venv venv
+source venv/bin/activate   # Linux/macOS
+# Windows:  venv\Scripts\activate
+
+pip install aiogram
+```
+
+4. **Запуск змінними в одну команду:**
+```bash
+TELEGRAM_BOT_TOKEN=ТВІЙ_ТОКЕН_ВІД_BOTFATHER SHOP_WEBAPP_URL=https://mycrm.hookly.org python3 bot.py
+```
+
+Або створи файл `.env.bot` (не коміти в git):
+```env
+TELEGRAM_BOT_TOKEN=123456:ABC-DEF...
+SHOP_WEBAPP_URL=https://mycrm.hookly.org
+```
+І запусти:
+```bash
+export $(grep -v '^#' .env.bot | xargs) && python3 bot.py
+```
+
+5. **Щоб бот сам працював на VPS (systemd — автозапуск при перезавантаженні):**
+
+   - Створи на сервері файл `.env.bot` у папці проєкту (наприклад `/home/administrator/web/mycrm.hookly.org/public_html/washop/.env.bot`) з вмістом:
+   ```env
+   TELEGRAM_BOT_TOKEN=твій_токен
+   SHOP_WEBAPP_URL=https://mycrm.hookly.org
+   ```
+
+   - Скопіюй unit-файл і увімкни сервіс (заміни шлях на свій, якщо проєкт в іншій папці):
+   ```bash
+   cd /home/administrator/web/mycrm.hookly.org/public_html/washop
+   sudo cp deploy/washop-bot.service /etc/systemd/system/
+   # Якщо проєкт не в цій папці — відредагуй: sudo nano /etc/systemd/system/washop-bot.service
+   # (WorkingDirectory, EnvironmentFile, ExecStart)
+   sudo systemctl daemon-reload
+   sudo systemctl enable washop-bot
+   sudo systemctl start washop-bot
+   ```
+
+   - Перевірка:
+   ```bash
+   sudo systemctl status washop-bot   # має бути active (running)
+   sudo journalctl -u washop-bot -f    # логи в реальному часі
+   ```
+
+   Після цього бот запускається разом із сервером і перезапускається при падінні.
+
+   Якщо проєкт у `/home/administrator/...`, у unit-файлі можливо треба змінити `User=` та `Group=` на `administrator` (або твого користувача), щоб сервіс мав доступ до папки та venv.
+
+**Альтернатива (без systemd)** — бот у фоні вручну:
+```bash
+nohup env $(grep -v '^#' .env.bot | xargs) python3 bot.py > bot.log 2>&1 &
+```
+
+У Telegram напиши боту `/start` — з’явиться кнопка «Відкрити магазин», по натисканню відкриється твій сайт магазину.
 
 ---
 
