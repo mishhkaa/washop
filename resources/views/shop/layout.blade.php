@@ -170,7 +170,7 @@
             if (!u.id && !u.username) return;
             var token = document.querySelector('meta[name="csrf-token"]');
             if (!token) return;
-            fetch('{{ route("shop.set-telegram") }}', {
+            fetch('{{ url("/shop/set-telegram") }}', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token.getAttribute('content'), 'Accept': 'application/json' },
                 body: JSON.stringify({ telegram_user_id: u.id ? String(u.id) : '', telegram_username: u.username ? String(u.username) : '' })
