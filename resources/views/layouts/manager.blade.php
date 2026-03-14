@@ -10,7 +10,11 @@
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700" rel="stylesheet" />
     
     <!-- Styles -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @else
+        <link rel="stylesheet" href="{{ asset('css/app-fallback.css') }}">
+    @endif
 </head>
 <body>
     <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
