@@ -165,6 +165,18 @@
             }
         })();
         (function() {
+            if (typeof Telegram === 'undefined' || !Telegram.WebApp || !Telegram.WebApp.initDataUnsafe || !Telegram.WebApp.initDataUnsafe.user) return;
+            var u = Telegram.WebApp.initDataUnsafe.user;
+            if (!u.id && !u.username) return;
+            var token = document.querySelector('meta[name="csrf-token"]');
+            if (!token) return;
+            fetch('{{ route("shop.set-telegram") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token.getAttribute('content'), 'Accept': 'application/json' },
+                body: JSON.stringify({ telegram_user_id: u.id ? String(u.id) : '', telegram_username: u.username ? String(u.username) : '' })
+            }).catch(function() {});
+        })();
+        (function() {
             var wrap = document.getElementById('langSwitcher');
             var btn = document.getElementById('langSwitcherBtn');
             var drop = document.getElementById('langSwitcherDrop');

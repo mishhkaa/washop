@@ -37,6 +37,14 @@
                         <label for="cashback_percent" class="block text-sm font-medium text-gray-700 mb-2">% кешбеку від замовлення</label>
                         <input type="number" name="cashback_percent" id="cashback_percent" min="0" max="100" value="{{ old('cashback_percent', $client->cashback_percent) }}" class="w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition">
                     </div>
+                    <div>
+                        <label for="cashback_balance" class="block text-sm font-medium text-gray-700 mb-2">Баланс кешбеку (zł) — встановити вручну</label>
+                        <input type="number" name="cashback_balance" id="cashback_balance" min="0" step="0.01" value="{{ old('cashback_balance', $client->cashback_balance) }}" class="w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition">
+                    </div>
+                    <div>
+                        <label for="add_cashback" class="block text-sm font-medium text-gray-700 mb-2">Або додати до балансу (zł)</label>
+                        <input type="number" name="add_cashback" id="add_cashback" min="0" step="0.01" value="{{ old('add_cashback') }}" placeholder="0" class="w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition">
+                    </div>
                     <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition shadow-sm">Зберегти</button>
                 </form>
                 <dl class="pt-5 border-t border-gray-100 space-y-4">
@@ -56,7 +64,7 @@
             </div>
             <div class="p-6 space-y-4">
                 <p class="text-3xl font-bold text-emerald-600 tabular-nums">{{ number_format((float) $client->cashback_balance, 2) }} zł</p>
-                <p class="text-sm text-gray-500">Нараховується автоматично при кожній покупці ({{ $client->cashback_percent }}% від суми замовлення).</p>
+                <p class="text-sm text-gray-500">Нараховується автоматично при кожній покупці ({{ $client->cashback_percent }}% від суми). Адмін може змінити баланс або % у формі зліва.</p>
                 @if($client->telegram_username)
                     <a href="https://t.me/{{ $client->telegram_username }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2.5 bg-[#0088cc] text-white rounded-xl text-sm font-medium hover:bg-[#0077b5] transition shadow-sm mt-2">
                         Написати в Telegram

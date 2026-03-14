@@ -32,6 +32,7 @@ Route::get('/cart', fn () => redirect()->route('shop.home'))->name('shop.cart');
 Route::post('/cart/add', [ShopController::class, 'addToCart'])->name('shop.cart.add');
 Route::post('/cart/update', [ShopController::class, 'updateCart'])->name('shop.cart.update');
 Route::post('/cart/remove', [ShopController::class, 'removeFromCart'])->name('shop.cart.remove');
+Route::post('/shop/set-telegram', [ShopController::class, 'setTelegramSession'])->name('shop.set-telegram');
 Route::get('/checkout', [ShopController::class, 'checkoutForm'])->name('shop.checkout.form');
 Route::post('/checkout', [ShopController::class, 'checkout'])->name('shop.checkout');
 

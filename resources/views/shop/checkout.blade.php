@@ -18,17 +18,33 @@
     </ul>
 
     @php
-        $total = 0;
-        foreach ($items as $item) {
-            $total += $item->product->purchase_price * $item->quantity;
+        $total = $orderTotal ?? 0;
+        if ($total <= 0) {
+            foreach ($items as $item) {
+                $total += $item->product->purchase_price * $item->quantity;
+            }
         }
+        $cashbackBalance = $client ? (float) $client->cashback_balance : 0;
+        $maxUseCashback = min($cashbackBalance, $total);
     @endphp
-    <p class="checkout-total-label">{{ __('Order total') }}: <strong>{{ number_format($total, 0) }} zł</strong></p>
+    <p class="checkout-total-label">{{ __('Order total') }}: <strong>{{ number_format($total, 2) }} zł</strong></p>
 
     <form action="{{ route('shop.checkout') }}" method="POST" id="checkoutForm" class="checkout-form">
         @csrf
         <input type="hidden" name="telegram_user_id" id="telegram_user_id" value="">
         <input type="hidden" name="telegram_username" id="telegram_username" value="">
+
+        @if($client && $cashbackBalance > 0)
+        <section class="checkout-section checkout-cashback-block">
+            <h3 class="checkout-section-title">{{ __('Your cashback') }}: {{ number_format($cashbackBalance, 2) }} zł</h3>
+            <label class="checkout-label" for="use_cashback">{{ __('Use cashback') }}</label>
+            <input type="number" name="use_cashback" id="use_cashback" class="checkout-input" value="{{ old('use_cashback', 0) }}" min="0" max="{{ number_format($maxUseCashback, 2, '.', '') }}" step="0.01" placeholder="0">
+            <p class="checkout-cashback-hint">{{ __('Max to use') }}: {{ number_format($maxUseCashback, 2) }} zł</p>
+            @if($errors->has('use_cashback'))
+            <p class="checkout-error">{{ $errors->first('use_cashback') }}</p>
+            @endif
+        </section>
+        @endif
 
         <section class="checkout-section">
             <h3 class="checkout-section-title">{{ __('Choose delivery method') }}</h3>

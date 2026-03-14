@@ -96,6 +96,21 @@ class ShopController extends Controller
         return redirect()->back()->with('open_cart', true);
     }
 
+    public function setTelegramSession(Request $request)
+    {
+        $request->validate([
+            'telegram_user_id' => 'nullable|string|max:100',
+            'telegram_username' => 'nullable|string|max:100',
+        ]);
+        if ($request->filled('telegram_user_id') || $request->filled('telegram_username')) {
+            session([
+                'shop_telegram_user_id' => $request->input('telegram_user_id'),
+                'shop_telegram_username' => $request->input('telegram_username'),
+            ]);
+        }
+        return response()->json(['ok' => true]);
+    }
+
     public function checkoutForm(Request $request)
     {
         $cart = $request->session()->get('shop_cart', []);
@@ -105,12 +120,20 @@ class ShopController extends Controller
         $productIds = array_keys($cart);
         $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
         $items = [];
+        $orderTotal = 0;
         foreach ($cart as $id => $qty) {
             if (isset($products[$id])) {
                 $items[] = (object)['product' => $products[$id], 'quantity' => (int) $qty];
+                $orderTotal += $products[$id]->purchase_price * $qty;
             }
         }
-        return view('shop.checkout', compact('items'));
+        $client = null;
+        $tid = $request->input('telegram_user_id') ?: session('shop_telegram_user_id');
+        $tun = $request->input('telegram_username') ?: session('shop_telegram_username');
+        if ($tid || $tun) {
+            $client = Client::findOrCreateByTelegram($tid, $tun);
+        }
+        return view('shop.checkout', compact('items', 'client', 'orderTotal'));
     }
 
     public function checkout(Request $request)
@@ -134,6 +157,7 @@ class ShopController extends Controller
             $messages['delivery_pickup_phone.required'] = __('Required for pickup');
             $messages['delivery_pickup_district.required'] = __('Required for pickup');
         }
+        $rules['use_cashback'] = 'nullable|numeric|min:0';
         $request->validate($rules, $messages);
         $cart = $request->session()->get('shop_cart', []);
         if (empty($cart)) {
@@ -179,6 +203,15 @@ class ShopController extends Controller
                     $request->input('telegram_user_id'),
                     $request->input('telegram_username')
                 );
+                $useCashback = 0.0;
+                if ($client && $orderTotal > 0) {
+                    $useCashback = (float) $request->input('use_cashback', 0);
+                    $useCashback = min($useCashback, (float) $client->cashback_balance, $orderTotal);
+                    $useCashback = round($useCashback, 2);
+                    if ($useCashback > 0) {
+                        $client->update(['cashback_balance' => (float) $client->cashback_balance - $useCashback]);
+                    }
+                }
                 $saleData = [
                     'manager_id' => $managerId,
                     'client_id' => $client?->id,
@@ -213,8 +246,14 @@ class ShopController extends Controller
                         'profit' => $data['profit'],
                     ]);
                 }
-                if ($client && $orderTotal > 0) {
-                    $client->accrueCashback($orderTotal);
+                if ($client && ($orderTotal - $useCashback) > 0) {
+                    $client->accrueCashback($orderTotal - $useCashback);
+                }
+                if ($request->filled('telegram_user_id') || $request->filled('telegram_username')) {
+                    session([
+                        'shop_telegram_user_id' => $request->input('telegram_user_id'),
+                        'shop_telegram_username' => $request->input('telegram_username'),
+                    ]);
                 }
                 return $sale;
             });

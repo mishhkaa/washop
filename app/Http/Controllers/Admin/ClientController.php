@@ -39,8 +39,20 @@ class ClientController extends Controller
             'name' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:50',
             'cashback_percent' => 'nullable|integer|min:0|max:100',
+            'cashback_balance' => 'nullable|numeric|min:0',
+            'add_cashback' => 'nullable|numeric|min:0',
         ]);
-        $client->update($validated);
+        if (array_key_exists('add_cashback', $validated) && $validated['add_cashback'] > 0) {
+            $client->update(['cashback_balance' => (float) $client->cashback_balance + (float) $validated['add_cashback']]);
+            unset($validated['add_cashback']);
+        }
+        if (array_key_exists('cashback_balance', $validated)) {
+            $client->update(['cashback_balance' => (float) $validated['cashback_balance']]);
+            unset($validated['cashback_balance']);
+        }
+        if (!empty($validated)) {
+            $client->update($validated);
+        }
         return back()->with('success', 'Дані клієнта оновлено.');
     }
 }

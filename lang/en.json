@@ -58,5 +58,8 @@
     "Phone": "Phone",
     "District / area": "District / area",
     "Required for Paczkomat": "Please enter the Paczkomat code.",
-    "Required for pickup": "Please fill in name, phone and district for personal pickup."
+    "Required for pickup": "Please fill in name, phone and district for personal pickup.",
+    "Your cashback": "Your cashback",
+    "Use cashback": "Use cashback (zł)",
+    "Max to use": "Max to use"
 }

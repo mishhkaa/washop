@@ -1651,6 +1651,8 @@ main {
     text-decoration: none;
 }
 .checkout-link-inline:hover { color: #93c5fd; text-decoration: underline; }
+.checkout-cashback-block { margin-bottom: 20px; }
+.checkout-cashback-hint { font-size: 12px; color: #94a3b8; margin-top: 4px; }
 
 /* Notification */
 .notification {
