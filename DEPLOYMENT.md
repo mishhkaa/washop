@@ -103,6 +103,15 @@ php artisan db:seed --class=BotProductsSeeder --force
 php artisan db:seed --force
 ```
 
+**Логін у CRM (після `php artisan db:seed --force`):**
+
+| Роль    | Email             | Пароль   |
+|---------|-------------------|----------|
+| Адмін   | `admin@example.com` | `password` |
+| Менеджер | `test@example.com`  | `password` |
+
+Сторінка входу: **`/crm/login`** (наприклад `https://твій-домен.com/crm/login`). Після першого входу зміни пароль в профілі або через адмінку.
+
 ---
 
 ## 5. Збірка фронту (CRM стилі/скрипти)
