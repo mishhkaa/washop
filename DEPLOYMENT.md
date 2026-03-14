@@ -112,7 +112,7 @@ SHOP_API_TOKEN=згенеруй_довгий_випадковий_рядок
 # Telegram (один .env для Laravel і бота; заявки летять у чат)
 TELEGRAM_BOT_TOKEN=токен_від_BotFather
 TELEGRAM_ORDERS_CHAT_ID=-1003698957698
-SHOP_WEBAPP_URL=https://твій-домен.com
+SHOP_WEBAPP_URL=https://mycrm.hookly.org
 ```
 **Важливо:** бот має бути доданий у чат (групу) з ID `TELEGRAM_ORDERS_CHAT_ID` як учасник, інакше Laravel не зможе відправляти туди повідомлення про замовлення.
 
