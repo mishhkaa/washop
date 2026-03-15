@@ -160,6 +160,20 @@
                                 <dd class="text-gray-900 font-mono">{{ $sale->delivery_paczkomat_code }}</dd>
                             </div>
                         @endif
+                        @if($sale->delivery_method === 'paczkomat' && ($sale->delivery_pickup_name || $sale->delivery_pickup_phone))
+                            @if($sale->delivery_pickup_name)
+                                <div>
+                                    <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Ім'я</dt>
+                                    <dd class="text-gray-900">{{ $sale->delivery_pickup_name }}</dd>
+                                </div>
+                            @endif
+                            @if($sale->delivery_pickup_phone)
+                                <div>
+                                    <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Телефон</dt>
+                                    <dd class="text-gray-900">{{ $sale->delivery_pickup_phone }}</dd>
+                                </div>
+                            @endif
+                        @endif
                         @if($sale->delivery_method === 'osobisty_odbior')
                             @if($sale->delivery_pickup_name)
                                 <div>

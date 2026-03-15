@@ -65,6 +65,16 @@
             </div>
 
             <div id="paczkomat-fields" class="checkout-delivery-fields">
+                <label class="checkout-label" for="delivery_paczkomat_name">{{ __('Your name') }}</label>
+                <input type="text" name="delivery_pickup_name" id="delivery_paczkomat_name" class="checkout-input" value="{{ old('delivery_pickup_name') }}" maxlength="255" placeholder="{{ __('Your name') }}">
+                @if($errors->has('delivery_pickup_name'))
+                <p class="checkout-error">{{ $errors->first('delivery_pickup_name') }}</p>
+                @endif
+                <label class="checkout-label" for="delivery_paczkomat_phone">{{ __('Phone') }}</label>
+                <input type="text" name="delivery_pickup_phone" id="delivery_paczkomat_phone" class="checkout-input" value="{{ old('delivery_pickup_phone') }}" maxlength="64" placeholder="{{ __('Phone placeholder') }}">
+                @if($errors->has('delivery_pickup_phone'))
+                <p class="checkout-error">{{ $errors->first('delivery_pickup_phone') }}</p>
+                @endif
                 <label class="checkout-label" for="delivery_paczkomat_code">{{ __('Paczkomat code') }}</label>
                 <input type="text" name="delivery_paczkomat_code" id="delivery_paczkomat_code" class="checkout-input" placeholder="{{ __('Paczkomat code placeholder') }}" value="{{ old('delivery_paczkomat_code') }}" maxlength="32" autocomplete="off">
                 <a href="https://inpost.pl/znajdz-paczkomat" target="_blank" rel="noopener noreferrer" class="checkout-link-inline">{{ __('Find paczkomat on map') }}</a>
@@ -136,9 +146,13 @@
         if (method.value === 'paczkomat') {
             paczkomatBlock.style.display = 'block';
             pickupBlock.style.display = 'none';
+            paczkomatBlock.querySelectorAll('input').forEach(function(i) { i.disabled = false; });
+            pickupBlock.querySelectorAll('input, select').forEach(function(i) { i.disabled = true; });
         } else {
             paczkomatBlock.style.display = 'none';
             pickupBlock.style.display = 'block';
+            paczkomatBlock.querySelectorAll('input').forEach(function(i) { i.disabled = true; });
+            pickupBlock.querySelectorAll('input, select').forEach(function(i) { i.disabled = false; });
         }
     }
     document.querySelectorAll('input[name="delivery_method"]').forEach(function(radio) {

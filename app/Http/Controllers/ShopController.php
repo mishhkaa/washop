@@ -220,7 +220,11 @@ class ShopController extends Controller
         ];
         if ($request->input('delivery_method') === 'paczkomat') {
             $rules['delivery_paczkomat_code'] = 'required|string|max:32';
+            $rules['delivery_pickup_name'] = 'required|string|max:255';
+            $rules['delivery_pickup_phone'] = 'required|string|max:64';
             $messages['delivery_paczkomat_code.required'] = __('Required for Paczkomat');
+            $messages['delivery_pickup_name.required'] = __('Required for delivery');
+            $messages['delivery_pickup_phone.required'] = __('Required for delivery');
         }
         if ($request->input('delivery_method') === 'osobisty_odbior') {
             $rules['delivery_pickup_name'] = 'required|string|max:255';
@@ -333,11 +337,13 @@ class ShopController extends Controller
                     $saleData['delivery_paczkomat_code'] = $request->input('delivery_method') === 'paczkomat' ? trim((string) $request->input('delivery_paczkomat_code')) : null;
                 }
                 if (Schema::hasColumn('sales', 'delivery_pickup_name')) {
-                    $saleData['delivery_pickup_name'] = $request->input('delivery_method') === 'osobisty_odbior' ? trim((string) $request->input('delivery_pickup_name')) : null;
-                    $saleData['delivery_pickup_phone'] = $request->input('delivery_method') === 'osobisty_odbior' ? trim((string) $request->input('delivery_pickup_phone')) : null;
-                    $saleData['delivery_pickup_district'] = $request->input('delivery_method') === 'osobisty_odbior' ? trim((string) $request->input('delivery_pickup_district')) : null;
+                    $isPaczkomat = $request->input('delivery_method') === 'paczkomat';
+                    $isPickup = $request->input('delivery_method') === 'osobisty_odbior';
+                    $saleData['delivery_pickup_name'] = ($isPaczkomat || $isPickup) ? trim((string) $request->input('delivery_pickup_name')) : null;
+                    $saleData['delivery_pickup_phone'] = ($isPaczkomat || $isPickup) ? trim((string) $request->input('delivery_pickup_phone')) : null;
+                    $saleData['delivery_pickup_district'] = $isPickup ? trim((string) $request->input('delivery_pickup_district')) : null;
                     if (Schema::hasColumn('sales', 'delivery_pickup_day')) {
-                        $saleData['delivery_pickup_day'] = $request->input('delivery_method') === 'osobisty_odbior' ? trim((string) $request->input('delivery_pickup_day')) : null;
+                        $saleData['delivery_pickup_day'] = $isPickup ? trim((string) $request->input('delivery_pickup_day')) : null;
                     }
                 }
                 $sale = Sale::create($saleData);
