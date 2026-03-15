@@ -999,6 +999,53 @@ main {
     overflow: hidden;
 }
 
+/* Блок вибору смаку — окремий рядок, в колір сайту (і в TG) */
+.product-flavor {
+    margin-bottom: 10px;
+    flex-shrink: 0;
+}
+
+.product-flavor__label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+}
+
+.product-variant-select {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    padding: 10px 36px 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    background-color: #0f172a;
+    color: #e2e8f0;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.product-variant-select:hover {
+    border-color: #475569;
+}
+
+.product-variant-select:focus {
+    outline: none;
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+}
+
 .product-footer {
     display: flex;
     justify-content: space-between;
@@ -1023,17 +1070,6 @@ main {
     align-items: center;
     gap: 6px;
     flex-wrap: wrap;
-}
-
-.product-variant-select {
-    min-width: 100px;
-    padding: 6px 10px;
-    border-radius: 6px;
-    border: 1px solid #334155;
-    background: #0f172a;
-    color: #e2e8f0;
-    font-size: 13px;
-    cursor: pointer;
 }
 
 .product-footer .btn-add {

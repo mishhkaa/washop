@@ -65,20 +65,24 @@
             </div>
             <h3 class="product-card__title">{{ $product->display_name }}</h3>
             <p class="product-card__desc">{{ $product->description ? Str::limit($product->description, 60) : '—' }}</p>
+            @if($product->hasVariants() && $product->availableVariants->isNotEmpty())
+                <div class="product-flavor">
+                    <label class="product-flavor__label" for="variant-{{ $product->id }}">{{ __('Flavor') }}</label>
+                    <select name="variant_id" id="variant-{{ $product->id }}" class="product-variant-select" required form="product-form-{{ $product->id }}">
+                        <option value="">{{ __('Choose flavor') }}</option>
+                        @foreach($product->availableVariants as $v)
+                            <option value="{{ $v->id }}">{{ $v->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
             <div class="product-footer">
                 <span class="price">{{ number_format($product->purchase_price ?? 0, 0) }} zł</span>
-                <form action="{{ route('shop.cart.add') }}" method="POST" class="product-add-form">
+                <form id="product-form-{{ $product->id }}" action="{{ route('shop.cart.add') }}" method="POST" class="product-add-form">
                     @csrf
                     <input type="hidden" name="product_id" value="{{ $product->id }}">
                     <input type="hidden" name="quantity" value="1">
-                    @if($product->hasVariants() && $product->availableVariants->isNotEmpty())
-                        <select name="variant_id" class="product-variant-select" required>
-                            <option value="">{{ __('Choose flavor') }}</option>
-                            @foreach($product->availableVariants as $v)
-                                <option value="{{ $v->id }}">{{ $v->name }}</option>
-                            @endforeach
-                        </select>
-                    @else
+                    @if(!$product->hasVariants() || $product->availableVariants->isEmpty())
                         <input type="hidden" name="variant_id" value="0">
                     @endif
                     <button type="submit" class="btn-add">{{ __('Add') }}</button>
