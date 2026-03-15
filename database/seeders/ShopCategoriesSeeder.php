@@ -14,6 +14,7 @@ class ShopCategoriesSeeder extends Seeder
             ['name' => 'Jednorazówki', 'slug' => 'disposables', 'sort_order' => 2],
             ['name' => 'Liquidy', 'slug' => 'liquids', 'sort_order' => 3],
             ['name' => 'Kartridże', 'slug' => 'cartridges', 'sort_order' => 4],
+            ['name' => 'Snuś', 'slug' => 'snus', 'sort_order' => 5],
         ];
 
         foreach ($items as $item) {

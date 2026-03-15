@@ -49,11 +49,11 @@ async def start(message: Message):
         )
         button_manager = InlineKeyboardButton(
             text="📞 Skontaktuj się z menadżerem",
-            url="https://t.me/blvckPL",
+            url="https://t.me/CloudCityManagerr",
         )
         keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_site], [button_manager]])
         await message.answer(
-            "🔥 Witaj w blvckPL - Twoim ulubionym sklepie vape! 🔥\n\n"
+            "🔥 Witaj w CloudCity - Twoim ulubionym sklepie vape! 🔥\n\n"
             "✨ Oferujemy:\n"
             "🎯 Wysokiej jakości kartridże\n"
             "💨 Najlepsze płyny (e-liquidy)\n"

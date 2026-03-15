@@ -85,7 +85,7 @@ cp .env.example .env
 Відредагуй `.env` для **продакшену**:
 
 ```env
-APP_NAME="WaShop"
+APP_NAME="CloudCity"
 APP_ENV=production
 APP_KEY=                    # згенеруй кроком нижче
 APP_DEBUG=false

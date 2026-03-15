@@ -17,11 +17,11 @@ class BotProductController extends Controller
         $products = Product::where('available_in_bot', true)
             ->where('quantity', '>', 0)
             ->orderBy('name')
-            ->get(['id', 'name', 'purchase_price', 'quantity'])
+            ->get(['id', 'name', 'purchase_price', 'quantity', 'shop_category'])
             ->map(function ($p) {
                 return [
                     'id' => $p->id,
-                    'name' => $p->name,
+                    'name' => $p->display_name,
                     'price' => (float) $p->purchase_price, // або окреме поле sale_price якщо додасте
                     'quantity' => (int) $p->quantity,
                 ];

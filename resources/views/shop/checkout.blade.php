@@ -12,7 +12,7 @@
     <ul class="checkout-items">
         @foreach($items as $item)
             <li class="checkout-item">
-                {{ $item->product->name }} × {{ $item->quantity }} — {{ number_format($item->product->purchase_price * $item->quantity, 0) }} zł
+                {{ $item->product->display_name }} × {{ $item->quantity }} — {{ number_format($item->product->purchase_price * $item->quantity, 0) }} zł
             </li>
         @endforeach
     </ul>

@@ -61,9 +61,9 @@
     @forelse($products as $product)
         <div class="product-card">
             <div class="product-image">
-                <img src="{{ $product->image_path ? $product->image_url : 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400&h=400&fit=crop' }}" alt="{{ $product->name }}" onerror="this.src='https://via.placeholder.com/300?text=Product'">
+                <img src="{{ $product->image_path ? $product->image_url : 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400&h=400&fit=crop' }}" alt="{{ $product->display_name }}" onerror="this.src='https://via.placeholder.com/300?text=Product'">
             </div>
-            <h3>{{ $product->name }}</h3>
+            <h3>{{ $product->display_name }}</h3>
             <p class="product-description">{{ $product->description ? Str::limit($product->description, 60) : '—' }}</p>
             <div class="product-footer">
                 <span class="price">{{ number_format($product->purchase_price ?? 0, 0) }} zł</span>
@@ -92,6 +92,6 @@
 </section>
 <section id="contacts" class="landing-section" style="padding: 20px; max-width: 800px; margin: 0 auto;">
     <h2 style="margin-bottom: 15px; color: #f1f5f9;">{{ __('Contact') }}</h2>
-    <p style="color: #94a3b8;">Telegram: <a href="https://t.me/blvckPL" target="_blank" rel="noopener" style="color: #60a5fa;">@blvckPL</a></p>
+    <p style="color: #94a3b8;">Telegram: <a href="https://t.me/CloudCityManagerr" target="_blank" rel="noopener" style="color: #60a5fa;">@CloudCityManagerr</a></p>
 </section>
 @endsection

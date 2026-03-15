@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', __('Shop')) - blvckPL</title>
+    <title>@yield('title', __('Shop')) - CloudCity</title>
     <link rel="stylesheet" href="{{ asset('css/shop.css') }}">
     <style>
         body { background: linear-gradient(160deg, #0f172a 0%, #0c1929 50%, #0e1a2e 100%) !important; color: #e2e8f0 !important; margin: 0; padding: 0; padding-top: 52px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
@@ -64,7 +64,7 @@
             <div class="header-content">
                 <div class="logo">
                     <a href="{{ route('shop.home') }}" style="color: inherit; text-decoration: none;">
-                        <h1>blvckPL</h1>
+                        <h1>CloudCity</h1>
                     </a>
                 </div>
                 <nav class="header-nav desktop-only">
@@ -149,12 +149,12 @@
                             <a href="{{ route('shop.home', ['category' => $cat->slug]) }}">{{ $cat->name }}</a>
                         @endforeach
                     </nav>
-                    <a href="https://t.me/blvckPL" target="_blank" rel="noopener" class="footer-telegram">
+                    <a href="https://t.me/CloudCityManagerr" target="_blank" rel="noopener" class="footer-telegram">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.226-.461-1.901-.903-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.139-5.062 3.345-.479.329-.913.489-1.302.481-.428-.009-1.252-.241-1.865-.44-.752-.244-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.831-2.529 6.998-3.015 3.333-1.386 4.025-1.627 4.477-1.635.099-.002.321.023.465.141.121.1.154.234.17.33.015.096.034.313.02.483z"/></svg>
                         {{ __('Write to manager') }}
                     </a>
                 </div>
-                <div class="footer-brand">blvckPL</div>
+                <div class="footer-brand">CloudCity</div>
             </div>
         </footer>
     </div>

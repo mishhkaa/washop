@@ -31,6 +31,7 @@ class BotProductsSeeder extends Seeder
             ['name' => 'ElfBar Gh33000pro', 'purchase_price' => 90, 'quantity' => 25, 'shop_category' => 'disposables'],
             ['name' => 'Elfbar MoonNight', 'purchase_price' => 80, 'quantity' => 25, 'shop_category' => 'disposables'],
             ['name' => 'ElfBar Bc20000', 'purchase_price' => 70, 'quantity' => 25, 'shop_category' => 'disposables'],
+            ['name' => 'CUBA снюс', 'purchase_price' => 20, 'quantity' => 50, 'shop_category' => 'snus'],
         ];
 
         foreach ($items as $item) {

@@ -39,4 +39,11 @@ class Product extends Model
         // Відносний шлях — зображення завжди з того ж хоста/порту, що й сторінка
         return '/storage/' . ltrim($this->image_path, '/');
     }
+
+    /** Назва для відображення: для категорії Pody додається позначка про рідину в подарунок */
+    public function getDisplayNameAttribute(): string
+    {
+        $suffix = ($this->shop_category === 'pods') ? ' (' . __('+ liquid as gift') . ')' : '';
+        return $this->name . $suffix;
+    }
 }

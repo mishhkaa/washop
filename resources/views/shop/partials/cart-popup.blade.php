@@ -20,10 +20,10 @@
             @foreach($items as $item)
                 <li class="cart-popup-item">
                     <div class="cart-popup-thumb">
-                        <img src="{{ $item->product->image_path ? $item->product->image_url : 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=100&h=100&fit=crop' }}" alt="{{ $item->product->name }}">
+                        <img src="{{ $item->product->image_path ? $item->product->image_url : 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=100&h=100&fit=crop' }}" alt="{{ $item->product->display_name }}">
                     </div>
                     <div class="cart-popup-info">
-                        <span class="cart-popup-name">{{ $item->product->name }}</span>
+                        <span class="cart-popup-name">{{ $item->product->display_name }}</span>
                         <span class="cart-popup-meta">{{ number_format($item->product->purchase_price ?? 0, 0) }} zł</span>
                     </div>
                     <div class="cart-popup-qty-wrap">

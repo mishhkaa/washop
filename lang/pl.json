@@ -42,6 +42,7 @@
     "category.disposables": "Jednorazówki",
     "category.liquids": "Liquidy",
     "category.cartridges": "Kartridże",
+    "category.snus": "Snuś",
     "Added to cart": "Dodano do koszyka",
     "Cart is empty": "Koszyk jest pusty",
     "Order :id placed thanks": "Zamówienie #:id złożone. Dziękujemy!",
@@ -62,5 +63,6 @@
     "Required for pickup": "Wypełnij imię, telefon i rejon przy odbiorze osobistym.",
     "Your cashback": "Twój cashback",
     "Use cashback": "Użyj cashback (zł)",
-    "Max to use": "Maks. do użycia"
+    "Max to use": "Maks. do użycia",
+    "+ liquid as gift": "+ płyn w prezencie"
 }

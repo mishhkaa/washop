@@ -42,6 +42,7 @@
     "category.disposables": "Одноразки",
     "category.liquids": "Рідини",
     "category.cartridges": "Картриджі",
+    "category.snus": "Снюс",
     "Added to cart": "Додано до кошика",
     "Cart is empty": "Кошик порожній",
     "Order :id placed thanks": "Замовлення #:id оформлено. Дякуємо!",
@@ -62,5 +63,6 @@
     "Required for pickup": "Заповніть ім'я, телефон і район при особистому відборі.",
     "Your cashback": "Ваш кешбек",
     "Use cashback": "Списати з кешбеку (zł)",
-    "Max to use": "Макс. до списання"
+    "Max to use": "Макс. до списання",
+    "+ liquid as gift": "+ рідина в подарунок"
 }
