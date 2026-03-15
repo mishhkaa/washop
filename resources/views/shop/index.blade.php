@@ -63,32 +63,26 @@
             <div class="product-image">
                 <img src="{{ $product->image_path ? $product->image_url : 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400&h=400&fit=crop' }}" alt="{{ $product->display_name }}" onerror="this.src='https://via.placeholder.com/300?text=Product'">
             </div>
-            <div class="product-body">
-                <h3 class="product-title">{{ $product->display_name }}</h3>
-                <p class="product-description">{{ $product->description ? Str::limit($product->description, 60) : '—' }}</p>
-                @if($product->hasVariants() && $product->availableVariants->isNotEmpty())
-                    <div class="product-flavor">
-                        <span class="product-flavor-label">{{ __('Flavor') }}</span>
-                        <select name="variant_id" class="product-flavor-select" required form="product-form-{{ $product->id }}">
+            <h3 class="product-card__title">{{ $product->display_name }}</h3>
+            <p class="product-card__desc">{{ $product->description ? Str::limit($product->description, 60) : '—' }}</p>
+            <div class="product-footer">
+                <span class="price">{{ number_format($product->purchase_price ?? 0, 0) }} zł</span>
+                <form action="{{ route('shop.cart.add') }}" method="POST" class="product-add-form">
+                    @csrf
+                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                    <input type="hidden" name="quantity" value="1">
+                    @if($product->hasVariants() && $product->availableVariants->isNotEmpty())
+                        <select name="variant_id" class="product-variant-select" required>
                             <option value="">{{ __('Choose flavor') }}</option>
                             @foreach($product->availableVariants as $v)
                                 <option value="{{ $v->id }}">{{ $v->name }}</option>
                             @endforeach
                         </select>
-                    </div>
-                @endif
-                <div class="product-actions">
-                    <span class="product-price">{{ number_format($product->purchase_price ?? 0, 0) }} zł</span>
-                    <form id="product-form-{{ $product->id }}" action="{{ route('shop.cart.add') }}" method="POST" class="product-add-form">
-                        @csrf
-                        <input type="hidden" name="product_id" value="{{ $product->id }}">
-                        <input type="hidden" name="quantity" value="1">
-                        @if(!$product->hasVariants() || $product->availableVariants->isEmpty())
-                            <input type="hidden" name="variant_id" value="0">
-                        @endif
-                        <button type="submit" class="product-btn-add">{{ __('Add') }}</button>
-                    </form>
-                </div>
+                    @else
+                        <input type="hidden" name="variant_id" value="0">
+                    @endif
+                    <button type="submit" class="btn-add">{{ __('Add') }}</button>
+                </form>
             </div>
         </div>
     @empty

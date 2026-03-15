@@ -7,22 +7,6 @@
     <title>@yield('title', __('Shop')) - CloudCity</title>
     {{-- secure_asset() щоб у Telegram WebView не блокувався CSS через mixed content --}}
     <link rel="stylesheet" href="{{ secure_asset('css/shop.css') }}">
-    {{-- Стилі для Telegram WebView: застосовуються тільки коли JS виставить body.tg-webapp (User-Agent не завжди містить "Telegram") --}}
-    <style id="tg-shop-fallback">
-        body.tg-webapp .products{display:flex!important;flex-wrap:wrap!important;gap:16px!important;margin-top:18px!important;}
-        body.tg-webapp .product-card{width:100%!important;max-width:280px!important;background:#1e293b!important;border-radius:14px!important;overflow:hidden!important;border:1px solid #334155!important;display:flex!important;flex-direction:column!important;}
-        body.tg-webapp .product-image{width:100%!important;height:0!important;padding-bottom:133.33%!important;position:relative!important;overflow:hidden!important;background:#0f172a!important;}
-        body.tg-webapp .product-image img{position:absolute!important;top:0!important;left:0!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:center top!important;}
-        body.tg-webapp .product-body{padding:14px 12px 12px!important;display:flex!important;flex-direction:column!important;flex:1!important;}
-        body.tg-webapp .product-title{font-size:14px!important;margin:0 0 6px 0!important;color:#f1f5f9!important;font-weight:600!important;line-height:1.35!important;overflow:hidden!important;}
-        body.tg-webapp .product-description{color:#94a3b8!important;font-size:12px!important;margin:0 0 10px 0!important;line-height:1.4!important;overflow:hidden!important;}
-        body.tg-webapp .product-flavor{display:block!important;margin:0 0 10px 0!important;}
-        body.tg-webapp .product-flavor-label{display:block!important;font-size:11px!important;font-weight:600!important;color:#64748b!important;text-transform:uppercase!important;letter-spacing:0.06em!important;margin-bottom:6px!important;}
-        body.tg-webapp .product-flavor-select{display:block!important;width:100%!important;max-width:100%!important;padding:10px 12px!important;font-size:13px!important;border:1px solid #334155!important;border-radius:10px!important;background:#0f172a!important;color:#e2e8f0!important;cursor:pointer!important;box-sizing:border-box!important;-webkit-appearance:menulist!important;appearance:auto!important;}
-        body.tg-webapp .product-actions{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;padding-top:12px!important;border-top:1px solid #334155!important;margin-top:auto!important;}
-        body.tg-webapp .product-price{font-size:17px!important;font-weight:700!important;color:#93c5fd!important;}
-        body.tg-webapp .product-btn-add{padding:10px 18px!important;font-size:13px!important;font-weight:600!important;border-radius:10px!important;border:none!important;cursor:pointer!important;background:#2563eb!important;color:#fff!important;}
-    </style>
     <style>
         body { background: linear-gradient(160deg, #0f172a 0%, #0c1929 50%, #0e1a2e 100%) !important; color: #e2e8f0 !important; margin: 0; padding: 0; padding-top: 52px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         .container { background: transparent !important; min-height: 100vh; }
