@@ -76,6 +76,7 @@ Route::prefix('crm')->group(function () {
             Route::resource('managers', ManagerController::class)->except(['show']);
             Route::resource('sales', SaleController::class);
             Route::post('sales/{sale}/assign-manager', [SaleController::class, 'assignManager'])->name('sales.assign-manager');
+            Route::post('sales/{sale}/status', [SaleController::class, 'updateStatus'])->name('sales.update-status');
             Route::resource('clients', ClientController::class)->only(['index', 'show', 'update']);
             Route::get('shop', [BotController::class, 'index'])->name('bot.index'); // Магазин / ТГ-бот (головна розділу)
             Route::resource('shop/categories', ShopCategoryController::class)->parameters(['categories' => 'shopCategory'])->names('shop.categories');

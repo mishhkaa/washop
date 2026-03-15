@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Sale;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 
 class TelegramOrderNotification
 {
@@ -111,6 +112,9 @@ class TelegramOrderNotification
             }
             $lines[] = '';
         }
+
+        $confirmUrl = URL::route('admin.sales.show', ['sale' => $sale->id], true);
+        $lines[] = '🔗 <a href="' . self::escapeHtml($confirmUrl) . '">Підтвердити замовлення</a>';
 
         return implode("\n", $lines);
     }

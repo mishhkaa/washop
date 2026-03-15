@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -137,6 +138,7 @@ class SaleController extends Controller
                         'profit' => $totalProfit,
                         'sale_price' => 0,
                         'quantity' => 0,
+                        'status' => 'accepted',
                     ]);
                     
                     foreach ($saleItems as $item) {
@@ -169,7 +171,8 @@ class SaleController extends Controller
                     $validated['profit_to_admin'] = $profitToAdmin;
                     $totalProfit = $validated['profit'];
                     $totalRevenue = $salePrice * $quantity;
-                    
+                    $validated['status'] = 'accepted';
+
                     Sale::create($validated);
                     $product->decrement('quantity', $quantity);
                 }
@@ -204,30 +207,103 @@ class SaleController extends Controller
         return back()->with('success', 'Менеджера прив\'язано до замовлення.');
     }
 
+    /**
+     * Зміна статусу замовлення. При «Прийнято» — списання залишків зі складу.
+     */
+    public function updateStatus(Request $request, Sale $sale)
+    {
+        $request->validate(['status' => 'required|in:pending,accepted,cancelled,completed']);
+        $newStatus = $request->input('status');
+        $previousStatus = $sale->status ?? 'accepted';
+
+        if ($newStatus === 'completed') {
+            $sale->update(['status' => 'completed']);
+            return back()->with('success', 'Замовлення позначено як виконане.');
+        }
+
+        if ($newStatus === 'accepted' && $previousStatus !== 'accepted') {
+            DB::transaction(function () use ($sale) {
+                $sale->load('saleItems.product');
+                foreach ($sale->saleItems as $item) {
+                    $product = Product::lockForUpdate()->find($item->product_id);
+                    if (!$product) {
+                        continue;
+                    }
+                    $qty = (int) $item->quantity;
+                    if ($item->product_variant_id) {
+                        ProductVariant::where('id', $item->product_variant_id)
+                            ->where('product_id', $product->id)
+                            ->decrement('quantity', $qty);
+                    } else {
+                        $product->decrement('quantity', $qty);
+                    }
+                }
+                $sale->update(['status' => 'accepted']);
+            });
+            return back()->with('success', 'Замовлення прийнято. Залишки списано зі складу.');
+        }
+
+        if ($newStatus === 'cancelled' && $previousStatus === 'accepted') {
+            // Повернути залишки при скасуванні вже прийнятого замовлення
+            DB::transaction(function () use ($sale) {
+                $sale->load('saleItems.product');
+                foreach ($sale->saleItems as $item) {
+                    $product = Product::lockForUpdate()->find($item->product_id);
+                    if (!$product) {
+                        continue;
+                    }
+                    $qty = (int) $item->quantity;
+                    if ($item->product_variant_id) {
+                        ProductVariant::where('id', $item->product_variant_id)
+                            ->where('product_id', $product->id)
+                            ->increment('quantity', $qty);
+                    } else {
+                        $product->increment('quantity', $qty);
+                    }
+                }
+                $sale->update(['status' => 'cancelled']);
+            });
+            return back()->with('success', 'Замовлення скасовано. Залишки повернено на склад.');
+        }
+
+        $sale->update(['status' => $newStatus]);
+        return back()->with('success', 'Статус оновлено.');
+    }
+
     public function destroy($id)
     {
         try {
             DB::transaction(function () use ($id) {
                 $sale = Sale::with('saleItems.product')->findOrFail($id);
-                
-                // Якщо це комбінований продаж, обробляємо всі sale_items
-                if ($sale->is_combined) {
-                    foreach ($sale->saleItems as $item) {
-                        $product = Product::lockForUpdate()->findOrFail($item->product_id);
-                        // Повертаємо кількість товару назад на склад
-                        $product->increment('quantity', $item->quantity);
-                    }
-                } else {
-                    // Для звичайного продажу
-                    if ($sale->product_id) {
-                        $product = Product::lockForUpdate()->findOrFail($sale->product_id);
-                        // Повертаємо кількість товару назад на склад
-                        $product->increment('quantity', $sale->quantity);
+                $wasAccepted = in_array($sale->status ?? 'accepted', ['accepted', 'completed'], true);
+
+                // Повертаємо залишки тільки якщо замовлення було в статусі «Прийнято» (залишки вже списані)
+                if ($wasAccepted) {
+                    if ($sale->is_combined) {
+                        foreach ($sale->saleItems as $item) {
+                            $product = Product::lockForUpdate()->find($item->product_id);
+                            if ($product) {
+                                if ($item->product_variant_id) {
+                                    ProductVariant::where('id', $item->product_variant_id)
+                                        ->where('product_id', $product->id)
+                                        ->increment('quantity', $item->quantity);
+                                } else {
+                                    $product->increment('quantity', $item->quantity);
+                                }
+                            }
+                        }
+                    } else {
+                        if ($sale->product_id) {
+                            $product = Product::lockForUpdate()->find($sale->product_id);
+                            if ($product) {
+                                $product->increment('quantity', $sale->quantity);
+                            }
+                        }
                     }
                 }
-                
+
                 // Повертаємо з балансу суму продажу (ціна продажу × кількість), яку нараховували
-                if (!$sale->profit_to_admin && $sale->manager_id) {
+                if ($wasAccepted && !$sale->profit_to_admin && $sale->manager_id) {
                     $manager = \App\Models\User::lockForUpdate()->find($sale->manager_id);
                     if ($manager && $manager->role === 'manager') {
                         $amountToReturn = $sale->is_combined
@@ -238,14 +314,13 @@ class SaleController extends Controller
                         }
                     }
                 }
-                
-                // Видаляємо продаж (cascade видалить sale_items автоматично)
+
                 $sale->delete();
             });
-            
+
             return redirect()->route('admin.sales.index')
                 ->with('success', 'Продаж успішно видалено');
-                
+
         } catch (\Exception $e) {
             return back()
                 ->withErrors(['error' => 'Помилка при видаленні: ' . $e->getMessage()]);

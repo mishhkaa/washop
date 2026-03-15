@@ -4,6 +4,9 @@
 
 @section('content')
 <div class="crm-page crm-page__spacer">
+    @if(session('success'))
+        <div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl text-green-800 text-sm">{{ session('success') }}</div>
+    @endif
     <header class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
         <div class="space-y-2">
             <a href="{{ request()->headers->get('referer') ?: route('admin.bot.index', ['tab' => 'orders']) }}" class="crm-page__back">← Назад</a>
@@ -12,6 +15,18 @@
                 {{ $sale->created_at->format('d.m.Y H:i') }}
                 <span class="text-gray-400">·</span>
                 {{ $sale->source === 'bot' ? 'З сайту / ТГ-бота' : 'CRM' }}
+                @if(isset($sale->status))
+                    <span class="text-gray-400">·</span>
+                    @if($sale->status === 'pending')
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">Очікує</span>
+                    @elseif($sale->status === 'accepted')
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Прийнято</span>
+                    @elseif($sale->status === 'completed')
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800">Виконано</span>
+                    @else
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">Скасовано</span>
+                    @endif
+                @endif
             </p>
         </div>
         @if($sale->source === 'bot' && ($sale->telegram_user_id || $sale->telegram_username))
@@ -172,6 +187,80 @@
                             @endif
                         @endif
                     </dl>
+                </div>
+            </section>
+            @endif
+
+            {{-- Дії з замовленням: підтвердження / відхилення / виконано --}}
+            @if(isset($sale->status))
+            <section class="crm-panel">
+                <div class="crm-panel__header">
+                    <h2 class="crm-panel__title">Дії з замовленням</h2>
+                </div>
+                <div class="crm-panel__body space-y-4">
+                    @if(($sale->status ?? '') === 'pending')
+                        <p class="text-sm text-gray-600 mb-4">Підтвердьте замовлення (спишеться залишок зі складу) або відхиліть.</p>
+                        <div class="flex flex-wrap gap-3">
+                            <form action="{{ route('admin.sales.update-status', $sale) }}" method="POST" class="inline">
+                                @csrf
+                                <input type="hidden" name="status" value="accepted">
+                                <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition shadow-sm">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                    Підтвердити замовлення
+                                </button>
+                            </form>
+                            <form action="{{ route('admin.sales.update-status', $sale) }}" method="POST" class="inline" onsubmit="return confirm('Відхилити це замовлення?');">
+                                @csrf
+                                <input type="hidden" name="status" value="cancelled">
+                                <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-500 text-white rounded-xl text-sm font-semibold hover:bg-gray-600 transition shadow-sm">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    Відхилити замовлення
+                                </button>
+                            </form>
+                        </div>
+                    @elseif(($sale->status ?? '') === 'accepted')
+                        <p class="text-sm text-gray-600 mb-4">Замовлення прийнято. Позначте виконаним, коли клієнт отримає товар.</p>
+                        <div class="flex flex-wrap gap-3">
+                            <form action="{{ route('admin.sales.update-status', $sale) }}" method="POST" class="inline">
+                                @csrf
+                                <input type="hidden" name="status" value="completed">
+                                <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition shadow-sm">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    Позначити виконаним
+                                </button>
+                            </form>
+                            <form action="{{ route('admin.sales.update-status', $sale) }}" method="POST" class="inline" onsubmit="return confirm('Скасувати замовлення? Залишки будуть повернені на склад.');">
+                                @csrf
+                                <input type="hidden" name="status" value="cancelled">
+                                <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition">
+                                    Скасувати
+                                </button>
+                            </form>
+                        </div>
+                    @elseif(($sale->status ?? '') === 'completed')
+                        <p class="text-sm text-emerald-700 font-medium">Замовлення виконано.</p>
+                        <details class="mt-3">
+                            <summary class="text-sm text-gray-500 cursor-pointer hover:text-gray-700">Змінити статус</summary>
+                            <form action="{{ route('admin.sales.update-status', $sale) }}" method="POST" class="mt-3 flex flex-wrap items-center gap-3">
+                                @csrf
+                                <select name="status" class="rounded-lg border border-gray-300 px-3 py-2 text-sm">
+                                    <option value="accepted">Прийнято</option>
+                                    <option value="cancelled">Скасовано</option>
+                                </select>
+                                <button type="submit" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg text-sm font-medium hover:bg-gray-300">Зберегти</button>
+                            </form>
+                        </details>
+                    @else
+                        <p class="text-sm text-gray-600">Замовлення скасовано.</p>
+                        <form action="{{ route('admin.sales.update-status', $sale) }}" method="POST" class="mt-3 flex flex-wrap items-center gap-3">
+                            @csrf
+                            <select name="status" class="rounded-lg border border-gray-300 px-3 py-2 text-sm">
+                                <option value="pending">Очікує</option>
+                                <option value="accepted">Прийнято</option>
+                            </select>
+                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">Змінити статус</button>
+                        </form>
+                    @endif
                 </div>
             </section>
             @endif

@@ -16,6 +16,7 @@ class Sale extends Model
         'is_combined',
         'profit_to_admin',
         'source',
+        'status',
         'telegram_user_id',
         'telegram_username',
         'delivery_method',

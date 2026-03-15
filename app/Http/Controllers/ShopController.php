@@ -279,16 +279,12 @@ class ShopController extends Controller
                 $totalProfit = 0;
                 $orderTotal = 0;
                 $saleItemsData = [];
+                // Не списуємо залишки при оформленні — списання при зміні статусу на «Прийнято» в CRM
                 foreach ($orderItems as $item) {
-                    $product = Product::lockForUpdate()->findOrFail($item['product']->id);
+                    $product = Product::findOrFail($item['product']->id);
                     $variant = $item['variant'];
                     $qty = $item['quantity'];
                     $salePrice = (float) $product->purchase_price;
-                    if ($variant) {
-                        ProductVariant::where('id', $variant->id)->where('product_id', $product->id)->decrement('quantity', $qty);
-                    } else {
-                        $product->decrement('quantity', $qty);
-                    }
                     $profit = ($salePrice - ($product->purchase_price ?? 0)) * $qty;
                     $totalProfit += $profit;
                     $orderTotal += $salePrice * $qty;
@@ -327,6 +323,9 @@ class ShopController extends Controller
                     'telegram_user_id' => $request->input('telegram_user_id'),
                     'telegram_username' => $request->input('telegram_username'),
                 ];
+                if (Schema::hasColumn('sales', 'status')) {
+                    $saleData['status'] = 'pending';
+                }
                 if (Schema::hasColumn('sales', 'delivery_method')) {
                     $saleData['delivery_method'] = $request->input('delivery_method');
                 }
