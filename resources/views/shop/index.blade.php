@@ -77,7 +77,7 @@
                 </div>
             @endif
             <div class="product-footer">
-                <span class="price">{{ number_format($product->purchase_price ?? 0, 0) }} zł</span>
+                <span class="price">{{ number_format($product->website_price ?? 0, 0) }} zł</span>
                 <form id="product-form-{{ $product->id }}" action="{{ route('shop.cart.add') }}" method="POST" class="product-add-form">
                     @csrf
                     <input type="hidden" name="product_id" value="{{ $product->id }}">

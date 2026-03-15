@@ -60,10 +60,18 @@ class ShopController extends Controller
                 $query->orderBy('name', 'desc');
                 break;
             case 'price-asc':
-                $query->orderBy('purchase_price', 'asc');
+                if (\Illuminate\Support\Facades\Schema::hasColumn('products', 'sale_price')) {
+                    $query->orderByRaw('COALESCE(sale_price, purchase_price) ASC');
+                } else {
+                    $query->orderBy('purchase_price', 'asc');
+                }
                 break;
             case 'price-desc':
-                $query->orderBy('purchase_price', 'desc');
+                if (\Illuminate\Support\Facades\Schema::hasColumn('products', 'sale_price')) {
+                    $query->orderByRaw('COALESCE(sale_price, purchase_price) DESC');
+                } else {
+                    $query->orderBy('purchase_price', 'desc');
+                }
                 break;
             default:
                 $query->orderBy('name', 'asc');
@@ -190,7 +198,7 @@ class ShopController extends Controller
                 $variant = $product->variants->firstWhere('id', $variantId);
                 $variantName = $variant?->name;
             }
-            $price = (float) $product->purchase_price;
+            $price = (float) $product->website_price;
             $items[] = (object)[
                 'cart_key' => $key,
                 'product' => $product,
@@ -288,8 +296,9 @@ class ShopController extends Controller
                     $product = Product::findOrFail($item['product']->id);
                     $variant = $item['variant'];
                     $qty = $item['quantity'];
-                    $salePrice = (float) $product->purchase_price;
-                    $profit = ($salePrice - ($product->purchase_price ?? 0)) * $qty;
+                    $salePrice = (float) $product->website_price;
+                    $costPrice = (float) ($product->purchase_price ?? 0);
+                    $profit = ($salePrice - $costPrice) * $qty;
                     $totalProfit += $profit;
                     $orderTotal += $salePrice * $qty;
                     $saleItemsData[] = [

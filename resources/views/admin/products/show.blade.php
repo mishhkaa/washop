@@ -14,9 +14,16 @@
             </div>
 
             <div>
-                <label class="text-sm font-semibold text-gray-700">Ціна закупівлі</label>
+                <label class="text-sm font-semibold text-gray-700">Ціна закупу</label>
                 <p class="text-gray-900">{{ number_format($product->purchase_price ?? 0, 2) }} zł</p>
             </div>
+
+            @if(\Illuminate\Support\Facades\Schema::hasColumn('products', 'sale_price'))
+            <div>
+                <label class="text-sm font-semibold text-gray-700">Ціна на сайті</label>
+                <p class="text-gray-900">{{ $product->sale_price !== null ? number_format($product->sale_price, 2) . ' zł' : 'Як ціна закупу' }}</p>
+            </div>
+            @endif
 
             <div>
                 <label class="text-sm font-semibold text-gray-700">Кількість на складі</label>

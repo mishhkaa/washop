@@ -5,11 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', __('Shop')) - CloudCity</title>
-    {{-- secure_asset() щоб у Telegram WebView не блокувався CSS через mixed content --}}
-    <link rel="stylesheet" href="{{ secure_asset('css/shop.css') }}">
+    {{-- На localhost (http) — asset(), щоб CSS завантажився; на проді (https) — secure_asset() для Telegram --}}
+    <link rel="stylesheet" href="{{ request()->secure() ? secure_asset('css/shop.css') : asset('css/shop.css') }}">
     <style>
         body { background: linear-gradient(160deg, #0f172a 0%, #0c1929 50%, #0e1a2e 100%) !important; color: #e2e8f0 !important; margin: 0; padding: 0; padding-top: 52px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         .container { background: transparent !important; min-height: 100vh; }
+        main { color: #e2e8f0 !important; background: transparent !important; }
+        .product-card__title { color: #f1f5f9 !important; }
+        .product-card__desc { color: #94a3b8 !important; }
+        .product-flavor__label { color: #64748b !important; }
+        .price { color: #93c5fd !important; }
+        .filters-label { color: #94a3b8 !important; }
+        .no-products p { color: #94a3b8 !important; }
+        .category-card h3 { color: #f1f5f9 !important; }
+        a { color: inherit; }
+        a:hover { color: #e2e8f0; }
         .cart-page, .cart-page-title { color: #f1f5f9 !important; }
         .empty-cart-wrap { background: transparent !important; min-height: 60vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
         .empty-cart-inner { text-align: center; max-width: 320px; }

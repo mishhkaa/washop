@@ -12,7 +12,7 @@
     <ul class="checkout-items">
         @foreach($items as $item)
             <li class="checkout-item">
-                {{ $item->product->display_name }}@if($item->variant_name) · {{ $item->variant_name }}@endif × {{ $item->quantity }} — {{ number_format($item->product->purchase_price * $item->quantity, 0) }} zł
+                {{ $item->product->display_name }}@if($item->variant_name) · {{ $item->variant_name }}@endif × {{ $item->quantity }} — {{ number_format($item->product->website_price * $item->quantity, 0) }} zł
             </li>
         @endforeach
     </ul>
@@ -21,7 +21,7 @@
         $total = $orderTotal ?? 0;
         if ($total <= 0) {
             foreach ($items as $item) {
-                $total += $item->product->purchase_price * $item->quantity;
+                $total += $item->product->website_price * $item->quantity;
             }
         }
         $cashbackBalance = $client ? (float) $client->cashback_balance : 0;

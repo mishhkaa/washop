@@ -10,6 +10,7 @@ class Product extends Model
         'name',
         'description',
         'purchase_price',
+        'sale_price',
         'quantity',
         'manager_id',
         'available_in_bot',
@@ -66,6 +67,13 @@ class Product extends Model
         }
         // Відносний шлях — зображення завжди з того ж хоста/порту, що й сторінка
         return '/storage/' . ltrim($this->image_path, '/');
+    }
+
+    /** Ціна на сайті: якщо sale_price задано — вона, інакше purchase_price (для прибутку) */
+    public function getWebsitePriceAttribute(): float
+    {
+        $price = $this->sale_price ?? $this->purchase_price;
+        return (float) ($price ?? 0);
     }
 
     /** Назва для відображення: для категорії Pody додається позначка про рідину в подарунок */

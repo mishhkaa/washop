@@ -53,4 +53,23 @@ class Sale extends Model
     {
         return $this->hasMany(SaleItem::class);
     }
+
+    /** Назва товару для списку: один товар або "Комбіноване замовлення" з кількістю позицій */
+    public function getDisplayProductNameAttribute(): string
+    {
+        if ($this->is_combined && $this->relationLoaded('saleItems')) {
+            $count = $this->saleItems->count();
+            return $count > 0 ? 'Комбіноване замовлення (' . $count . ')' : '—';
+        }
+        return $this->product?->name ?? '—';
+    }
+
+    /** Сума замовлення: з sale_items для комбінованих, інакше quantity * sale_price */
+    public function getTotalAmountAttribute(): float
+    {
+        if ($this->is_combined && $this->relationLoaded('saleItems')) {
+            return (float) $this->saleItems->sum(fn ($item) => ($item->sale_price ?? 0) * ($item->quantity ?? 0));
+        }
+        return (float) (($this->quantity ?? 0) * ($this->sale_price ?? 0));
+    }
 }

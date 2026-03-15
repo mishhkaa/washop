@@ -42,8 +42,15 @@
             </div>
 
             <div class="form-group">
-                <label for="purchase_price">Ціна закупівлі (zł)</label>
+                <label for="purchase_price">Ціна закупу (zł)</label>
                 <input type="number" id="purchase_price" name="purchase_price" step="0.01" min="0" value="{{ old('purchase_price') }}" required placeholder="0.00">
+                <p class="mt-1 text-sm text-gray-500">Собівартість — для розрахунку прибутку.</p>
+            </div>
+
+            <div class="form-group">
+                <label for="sale_price">Ціна на сайті (zł)</label>
+                <input type="number" id="sale_price" name="sale_price" step="0.01" min="0" value="{{ old('sale_price') }}" placeholder="Якщо порожньо — буде ціна закупу">
+                <p class="mt-1 text-sm text-gray-500">Ціна, яка показується клієнту і за якою рахується дохід. Прибуток = ціна на сайті − ціна закупу.</p>
             </div>
 
             <div class="form-group">

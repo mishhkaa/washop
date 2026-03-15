@@ -151,7 +151,9 @@
                             </span>
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium text-gray-900 truncate">{{ $product->name }}</p>
+                                @if(isset($product->purchase_price))
                                 <p class="text-xs text-gray-500">{{ number_format($product->purchase_price ?? 0, 2) }} zł</p>
+                                @endif
                             </div>
                         </div>
                         <div class="ml-4 flex-shrink-0">
@@ -220,10 +222,10 @@
                     @forelse($recentSales as $sale)
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{{ $sale->id }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $sale->product->name ?? '-' }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $sale->display_product_name }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $sale->manager->name ?? '-' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $sale->quantity }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">{{ number_format($sale->quantity * $sale->sale_price, 2) }} zł</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $sale->is_combined ? $sale->saleItems->sum('quantity') : $sale->quantity }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">{{ number_format($sale->total_amount, 2) }} zł</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $sale->created_at->format('d.m.Y H:i') }}</td>
                         </tr>
                     @empty
@@ -241,13 +243,13 @@
                 <div class="bg-gray-50 rounded-lg p-4">
                     <div class="flex items-start justify-between mb-2">
                         <div class="flex-1">
-                            <p class="text-sm font-semibold text-gray-900">{{ $sale->product->name ?? '-' }}</p>
+                            <p class="text-sm font-semibold text-gray-900">{{ $sale->display_product_name }}</p>
                             <p class="text-xs text-gray-500 mt-1">#{{ $sale->id }} • {{ $sale->manager->name ?? '-' }}</p>
                         </div>
-                        <span class="text-sm font-bold text-green-600">{{ number_format($sale->quantity * $sale->sale_price, 2) }} zł</span>
+                        <span class="text-sm font-bold text-green-600">{{ number_format($sale->total_amount, 2) }} zł</span>
                     </div>
                     <div class="flex items-center justify-between text-xs text-gray-500">
-                        <span>Кількість: {{ $sale->quantity }}</span>
+                        <span>Кількість: {{ $sale->is_combined ? $sale->saleItems->sum('quantity') : $sale->quantity }}</span>
                         <span>{{ $sale->created_at->format('d.m.Y H:i') }}</span>
                     </div>
                 </div>

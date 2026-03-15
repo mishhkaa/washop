@@ -63,6 +63,7 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:5000',
             'purchase_price' => 'required|numeric|min:0',
+            'sale_price' => 'nullable|numeric|min:0',
             'quantity' => 'nullable|integer|min:0',
             'manager_id' => 'nullable|exists:users,id',
             'available_in_bot' => 'nullable|boolean',
@@ -70,8 +71,12 @@ class ProductController extends Controller
         ]);
         $validated['available_in_bot'] = $request->boolean('available_in_bot');
         $validated['shop_category'] = $request->input('shop_category') ?: null;
+        $validated['sale_price'] = $request->filled('sale_price') ? (float) $request->input('sale_price') : null;
         if (! Schema::hasColumn('products', 'description')) {
             unset($validated['description']);
+        }
+        if (! Schema::hasColumn('products', 'sale_price')) {
+            unset($validated['sale_price']);
         }
 
         $imageError = null;
@@ -152,6 +157,7 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:5000',
             'purchase_price' => 'required|numeric|min:0',
+            'sale_price' => 'nullable|numeric|min:0',
             'quantity' => 'nullable|integer|min:0',
             'manager_id' => 'nullable|exists:users,id',
             'available_in_bot' => 'nullable|boolean',
@@ -159,8 +165,12 @@ class ProductController extends Controller
         ]);
         $validated['available_in_bot'] = $request->boolean('available_in_bot');
         $validated['shop_category'] = $request->input('shop_category') ?: null;
+        $validated['sale_price'] = $request->filled('sale_price') ? (float) $request->input('sale_price') : null;
         if (! Schema::hasColumn('products', 'description')) {
             unset($validated['description']);
+        }
+        if (! Schema::hasColumn('products', 'sale_price')) {
+            unset($validated['sale_price']);
         }
 
         $variantsInput = $request->input('variants', []);

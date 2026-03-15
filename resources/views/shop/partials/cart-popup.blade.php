@@ -2,7 +2,7 @@
     $items = $cartItems ?? [];
     $total = 0;
     foreach ($items as $item) {
-        $total += ($item->product->purchase_price ?? 0) * $item->quantity;
+        $total += ($item->product->website_price ?? 0) * $item->quantity;
     }
 @endphp
 <div class="cart-modal-body">
@@ -24,7 +24,7 @@
                     </div>
                     <div class="cart-popup-info">
                         <span class="cart-popup-name">{{ $item->product->display_name }}@if($item->variant_name) · {{ $item->variant_name }}@endif</span>
-                        <span class="cart-popup-meta">{{ number_format($item->product->purchase_price ?? 0, 0) }} zł</span>
+                        <span class="cart-popup-meta">{{ number_format($item->product->website_price ?? 0, 0) }} zł</span>
                     </div>
                     <div class="cart-popup-qty-wrap">
                         <form action="{{ route('shop.cart.update') }}" method="POST" class="cart-popup-qty-form">
@@ -42,7 +42,7 @@
                         </form>
                     </div>
                     <div class="cart-popup-right">
-                        <span class="cart-popup-total">{{ number_format(($item->product->purchase_price ?? 0) * $item->quantity, 0) }} zł</span>
+                        <span class="cart-popup-total">{{ number_format(($item->product->website_price ?? 0) * $item->quantity, 0) }} zł</span>
                         <form action="{{ route('shop.cart.remove') }}" method="POST" class="cart-popup-remove-form">
                             @csrf
                             <input type="hidden" name="cart_key" value="{{ $item->cart_key }}">
