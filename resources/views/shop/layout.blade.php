@@ -11,7 +11,7 @@
         body { background: linear-gradient(160deg, #0f172a 0%, #0c1929 50%, #0e1a2e 100%) !important; color: #e2e8f0 !important; margin: 0; padding: 0; padding-top: 52px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         .container { background: transparent !important; min-height: 100vh; }
         main { color: #e2e8f0 !important; background: transparent !important; }
-        .products { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important; gap: 16px !important; padding: 14px !important; }
+        .products { display: grid !important; gap: 16px !important; padding: 14px !important; }
         .product-card { background: linear-gradient(165deg, #1e293b 0%, #1a2744 35%, #192234 100%) !important; border-radius: 12px !important; padding: 12px !important; border: 1px solid #334155 !important; display: flex !important; flex-direction: column !important; min-height: 0 !important; }
         .product-image { width: 100% !important; aspect-ratio: 3/4 !important; overflow: hidden !important; background: #0f172a !important; border-radius: 10px !important; margin-bottom: 10px !important; }
         .product-image img { width: 100% !important; height: 100% !important; object-fit: cover !important; }
