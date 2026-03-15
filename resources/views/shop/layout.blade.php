@@ -11,10 +11,18 @@
         body { background: linear-gradient(160deg, #0f172a 0%, #0c1929 50%, #0e1a2e 100%) !important; color: #e2e8f0 !important; margin: 0; padding: 0; padding-top: 52px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         .container { background: transparent !important; min-height: 100vh; }
         main { color: #e2e8f0 !important; background: transparent !important; }
-        .product-card__title { color: #f1f5f9 !important; }
-        .product-card__desc { color: #94a3b8 !important; }
-        .product-flavor__label { color: #64748b !important; }
-        .price { color: #93c5fd !important; }
+        .products { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important; gap: 16px !important; padding: 14px !important; }
+        .product-card { background: linear-gradient(165deg, #1e293b 0%, #1a2744 35%, #192234 100%) !important; border-radius: 12px !important; padding: 12px !important; border: 1px solid #334155 !important; display: flex !important; flex-direction: column !important; min-height: 0 !important; }
+        .product-image { width: 100% !important; aspect-ratio: 3/4 !important; overflow: hidden !important; background: #0f172a !important; border-radius: 10px !important; margin-bottom: 10px !important; }
+        .product-image img { width: 100% !important; height: 100% !important; object-fit: cover !important; }
+        .product-card__title { color: #f1f5f9 !important; font-size: 14px !important; font-weight: 600 !important; margin: 0 0 6px 0 !important; }
+        .product-card__desc { color: #94a3b8 !important; font-size: 12px !important; margin: 0 0 10px 0 !important; }
+        .product-flavor { margin-bottom: 10px !important; }
+        .product-flavor__label { display: block !important; font-size: 11px !important; font-weight: 600 !important; color: #64748b !important; text-transform: uppercase !important; letter-spacing: 0.05em !important; margin-bottom: 6px !important; }
+        .product-variant-select { display: block !important; width: 100% !important; min-width: 0 !important; padding: 10px 36px 10px 12px !important; border-radius: 8px !important; border: 1px solid #334155 !important; background-color: #0f172a !important; color: #e2e8f0 !important; font-size: 13px !important; font-weight: 500 !important; cursor: pointer !important; box-sizing: border-box !important; -webkit-appearance: none !important; appearance: none !important; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E") !important; background-repeat: no-repeat !important; background-position: right 12px center !important; }
+        .product-footer { display: flex !important; justify-content: space-between !important; align-items: center !important; gap: 8px !important; padding-top: 4px !important; border-top: 1px solid rgba(51,65,85,0.5) !important; flex-wrap: wrap !important; }
+        .price { color: #93c5fd !important; font-size: 16px !important; font-weight: 700 !important; white-space: nowrap !important; }
+        .product-footer .btn-add { padding: 8px 14px !important; font-size: 12px !important; font-weight: 600 !important; border-radius: 8px !important; border: none !important; background: #2563eb !important; color: #fff !important; cursor: pointer !important; }
         .filters-label { color: #94a3b8 !important; }
         .no-products p { color: #94a3b8 !important; }
         .category-card h3 { color: #f1f5f9 !important; }

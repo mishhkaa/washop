@@ -89,34 +89,34 @@
                     <h2 class="crm-panel__title">Клієнт / Джерело</h2>
                 </div>
                 <div class="crm-panel__body">
-                    <dl class="space-y-6">
+                    <dl class="space-y-5">
                         @if($sale->client)
                             @if($sale->client->telegram_username)
                                 <div>
-                                    <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Telegram нік</dt>
+                                    <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Telegram нік</dt>
                                     <dd class="text-gray-900 font-medium">@{{ $sale->client->telegram_username }}</dd>
                                 </div>
                             @endif
                             @if($sale->client->telegram_user_id)
                                 <div>
-                                    <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Telegram ID</dt>
+                                    <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Telegram ID</dt>
                                     <dd class="text-gray-900 font-medium">{{ $sale->client->telegram_user_id }}</dd>
                                 </div>
                             @endif
                             @if($sale->client->name)
                                 <div>
-                                    <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Ім'я</dt>
+                                    <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Ім'я</dt>
                                     <dd class="text-gray-900">{{ $sale->client->name }}</dd>
                                 </div>
                             @endif
                             @if($sale->client->phone)
                                 <div>
-                                    <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Телефон</dt>
+                                    <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Телефон</dt>
                                     <dd class="text-gray-900">{{ $sale->client->phone }}</dd>
                                 </div>
                             @endif
                             <div>
-                                <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Кешбек</dt>
+                                <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Кешбек</dt>
                                 <dd class="text-emerald-600 font-semibold">{{ number_format((float) $sale->client->cashback_balance, 2) }} zł</dd>
                             </div>
                             <div class="pt-2">
@@ -125,17 +125,17 @@
                         @else
                             @if($sale->source === 'bot')
                                 <div>
-                                    <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Telegram нік</dt>
-                                    <dd class="text-gray-900">{{ $sale->telegram_username ? '@' . $sale->telegram_username : '—' }}</dd>
+                                    <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Telegram нік</dt>
+                                    <dd class="text-gray-900 font-medium">{{ $sale->telegram_username ? '@' . $sale->telegram_username : '—' }}</dd>
                                 </div>
                                 <div>
-                                    <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Telegram ID</dt>
-                                    <dd class="text-gray-900">{{ $sale->telegram_user_id ?? '—' }}</dd>
+                                    <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Telegram ID</dt>
+                                    <dd class="text-gray-900 font-medium">{{ $sale->telegram_user_id ?? '—' }}</dd>
                                 </div>
                             @endif
                         @endif
                         <div>
-                            <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Замовлення створено</dt>
+                            <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Замовлення створено</dt>
                             <dd class="text-gray-900">{{ $sale->created_at->format('d.m.Y H:i') }}</dd>
                         </div>
                     </dl>
@@ -151,25 +151,25 @@
                 <div class="crm-panel__body">
                     <dl class="space-y-6">
                         <div>
-                            <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Спосіб</dt>
+                            <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Спосіб</dt>
                             <dd class="text-gray-900">{{ $sale->delivery_method === 'paczkomat' ? 'Paczkomat InPost' : 'Особистий відбір' }}</dd>
                         </div>
                         @if($sale->delivery_method === 'paczkomat' && $sale->delivery_paczkomat_code)
                             <div>
-                                <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Код paczkomatu</dt>
+                                <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Код paczkomatu</dt>
                                 <dd class="text-gray-900 font-mono">{{ $sale->delivery_paczkomat_code }}</dd>
                             </div>
                         @endif
                         @if($sale->delivery_method === 'paczkomat' && ($sale->delivery_pickup_name || $sale->delivery_pickup_phone))
                             @if($sale->delivery_pickup_name)
                                 <div>
-                                    <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Ім'я</dt>
+                                    <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Ім'я</dt>
                                     <dd class="text-gray-900">{{ $sale->delivery_pickup_name }}</dd>
                                 </div>
                             @endif
                             @if($sale->delivery_pickup_phone)
                                 <div>
-                                    <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Телефон</dt>
+                                    <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Телефон</dt>
                                     <dd class="text-gray-900">{{ $sale->delivery_pickup_phone }}</dd>
                                 </div>
                             @endif
@@ -177,25 +177,25 @@
                         @if($sale->delivery_method === 'osobisty_odbior')
                             @if($sale->delivery_pickup_name)
                                 <div>
-                                    <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Ім'я</dt>
+                                    <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Ім'я</dt>
                                     <dd class="text-gray-900">{{ $sale->delivery_pickup_name }}</dd>
                                 </div>
                             @endif
                             @if($sale->delivery_pickup_phone)
                                 <div>
-                                    <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Телефон</dt>
+                                    <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Телефон</dt>
                                     <dd class="text-gray-900">{{ $sale->delivery_pickup_phone }}</dd>
                                 </div>
                             @endif
                             @if($sale->delivery_pickup_district)
                                 <div>
-                                    <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Район</dt>
+                                    <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Район</dt>
                                     <dd class="text-gray-900">{{ $sale->delivery_pickup_district }}</dd>
                                 </div>
                             @endif
                             @if(isset($sale->delivery_pickup_day) && $sale->delivery_pickup_day)
                                 <div>
-                                    <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">День забрання</dt>
+                                    <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">День забрання</dt>
                                     <dd class="text-gray-900">{{ $sale->delivery_pickup_day }}</dd>
                                 </div>
                             @endif

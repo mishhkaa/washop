@@ -47,12 +47,18 @@
                     </div>
                     <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition shadow-sm">Зберегти</button>
                 </form>
-                <dl class="pt-5 border-t border-gray-100 space-y-4">
+                <dl class="pt-5 border-t border-gray-100 space-y-5">
                     @if($client->telegram_username)
-                        <div><dt class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">Telegram нік</dt><dd class="font-medium text-gray-900">@{{ $client->telegram_username }}</dd></div>
+                        <div>
+                            <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Telegram нік</dt>
+                            <dd class="text-gray-900 font-medium">@{{ $client->telegram_username }}</dd>
+                        </div>
                     @endif
                     @if($client->telegram_user_id)
-                        <div><dt class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">Telegram ID</dt><dd class="font-medium text-gray-900">{{ $client->telegram_user_id }}</dd></div>
+                        <div>
+                            <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Telegram ID</dt>
+                            <dd class="text-gray-900 font-medium">{{ $client->telegram_user_id }}</dd>
+                        </div>
                     @endif
                 </dl>
             </div>
