@@ -88,24 +88,15 @@
                 @php
                     $districtOptions = ['Ursynów', 'Praga'];
                     $districtValue = old('delivery_pickup_district');
-                    $isOtherDistrict = $districtValue === 'other' || ($districtValue && !in_array($districtValue, $districtOptions, true));
                 @endphp
                 <select name="delivery_pickup_district" id="delivery_pickup_district" class="checkout-input">
                     <option value="">— {{ __('Choose district') }} —</option>
                     @foreach($districtOptions as $opt)
                     <option value="{{ $opt }}" {{ $districtValue === $opt ? 'selected' : '' }}>{{ $opt }}</option>
                     @endforeach
-                    <option value="other" {{ $isOtherDistrict ? 'selected' : '' }}>{{ __('Other district') }}</option>
                 </select>
-                <div id="delivery_pickup_district_other_wrap" class="checkout-delivery-fields" style="display: none; margin-top: 0.5rem;">
-                    <label class="checkout-label" for="delivery_pickup_district_other">{{ __('Other district (specify)') }}</label>
-                    <input type="text" name="delivery_pickup_district_other" id="delivery_pickup_district_other" class="checkout-input" value="{{ old('delivery_pickup_district_other', $isOtherDistrict ? $districtValue : '') }}" maxlength="255" placeholder="{{ __('e.g. Bielany') }}">
-                </div>
                 @if($errors->has('delivery_pickup_district'))
                 <p class="checkout-error">{{ $errors->first('delivery_pickup_district') }}</p>
-                @endif
-                @if($errors->has('delivery_pickup_district_other'))
-                <p class="checkout-error">{{ $errors->first('delivery_pickup_district_other') }}</p>
                 @endif
                 <label class="checkout-label" for="delivery_pickup_day">{{ __('Preferred pickup day') }}</label>
                 <input type="text" name="delivery_pickup_day" id="delivery_pickup_day" class="checkout-input" value="{{ old('delivery_pickup_day') }}" maxlength="255" placeholder="{{ __('Preferred pickup day placeholder') }}">
@@ -149,24 +140,10 @@
             paczkomatBlock.style.display = 'none';
             pickupBlock.style.display = 'block';
         }
-        var districtSelect = document.getElementById('delivery_pickup_district');
-        var otherWrap = document.getElementById('delivery_pickup_district_other_wrap');
-        if (districtSelect && otherWrap) {
-            otherWrap.style.display = districtSelect.value === 'other' ? 'block' : 'none';
-        }
-    }
-    function toggleDistrictOther() {
-        var districtSelect = document.getElementById('delivery_pickup_district');
-        var otherWrap = document.getElementById('delivery_pickup_district_other_wrap');
-        if (districtSelect && otherWrap) {
-            otherWrap.style.display = districtSelect.value === 'other' ? 'block' : 'none';
-        }
     }
     document.querySelectorAll('input[name="delivery_method"]').forEach(function(radio) {
         radio.addEventListener('change', toggleDeliveryFields);
     });
-    var districtSelect = document.getElementById('delivery_pickup_district');
-    if (districtSelect) districtSelect.addEventListener('change', toggleDistrictOther);
     toggleDeliveryFields();
 })();
 </script>

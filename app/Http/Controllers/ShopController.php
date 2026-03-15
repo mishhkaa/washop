@@ -225,16 +225,13 @@ class ShopController extends Controller
         if ($request->input('delivery_method') === 'osobisty_odbior') {
             $rules['delivery_pickup_name'] = 'required|string|max:255';
             $rules['delivery_pickup_phone'] = 'required|string|max:64';
-            $rules['delivery_pickup_district'] = 'required|string|max:255';
+            $rules['delivery_pickup_district'] = 'required|in:Ursynów,Praga';
             $rules['delivery_pickup_day'] = 'required|string|max:255';
             $messages['delivery_pickup_name.required'] = __('Required for pickup');
             $messages['delivery_pickup_phone.required'] = __('Required for pickup');
             $messages['delivery_pickup_district.required'] = __('Required for pickup');
+            $messages['delivery_pickup_district.in'] = __('Choose Ursynów or Praga');
             $messages['delivery_pickup_day.required'] = __('Required for pickup');
-            if ($request->input('delivery_pickup_district') === 'other') {
-                $rules['delivery_pickup_district_other'] = 'required|string|max:255';
-                $messages['delivery_pickup_district_other.required'] = __('Required for pickup');
-            }
         }
         $rules['use_cashback'] = 'nullable|numeric|min:0';
         $request->validate($rules, $messages);
@@ -339,11 +336,7 @@ class ShopController extends Controller
                 if (Schema::hasColumn('sales', 'delivery_pickup_name')) {
                     $saleData['delivery_pickup_name'] = $request->input('delivery_method') === 'osobisty_odbior' ? trim((string) $request->input('delivery_pickup_name')) : null;
                     $saleData['delivery_pickup_phone'] = $request->input('delivery_method') === 'osobisty_odbior' ? trim((string) $request->input('delivery_pickup_phone')) : null;
-                    $district = $request->input('delivery_method') === 'osobisty_odbior' ? trim((string) $request->input('delivery_pickup_district')) : null;
-                    if ($district === 'other' && $request->filled('delivery_pickup_district_other')) {
-                        $district = trim((string) $request->input('delivery_pickup_district_other'));
-                    }
-                    $saleData['delivery_pickup_district'] = $district;
+                    $saleData['delivery_pickup_district'] = $request->input('delivery_method') === 'osobisty_odbior' ? trim((string) $request->input('delivery_pickup_district')) : null;
                     if (Schema::hasColumn('sales', 'delivery_pickup_day')) {
                         $saleData['delivery_pickup_day'] = $request->input('delivery_method') === 'osobisty_odbior' ? trim((string) $request->input('delivery_pickup_day')) : null;
                     }
