@@ -5,7 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', __('Shop')) - CloudCity</title>
-    <link rel="stylesheet" href="{{ asset('css/shop.css') }}">
+    {{-- secure_asset() щоб у Telegram WebView не блокувався CSS через mixed content (HTTPS сторінка + HTTP стилі) --}}
+    <link rel="stylesheet" href="{{ secure_asset('css/shop.css') }}">
+    @php
+        $isTelegramWebView = request()->header('User-Agent') && (stripos(request()->header('User-Agent'), 'Telegram') !== false || stripos(request()->header('User-Agent'), 'TelegramBot') !== false);
+    @endphp
+    @if($isTelegramWebView)
+    {{-- Резервні стилі картки товару для Telegram WebView (іноді зовнішній CSS не підвантажується) --}}
+    <style>
+        .products{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:18px;}
+        .product-card{background:linear-gradient(165deg,#1e293b 0%,#1a2744 35%,#192234 100%);border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.2);border:1px solid #334155;display:flex;flex-direction:column;min-height:0;}
+        .product-image{width:100%;aspect-ratio:3/4;overflow:hidden;background:#0f172a;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+        .product-image img{width:100%;height:100%;object-fit:cover;object-position:center top;}
+        .product-body{padding:14px 12px 12px;display:flex;flex-direction:column;gap:10px;flex:1;min-height:0;}
+        .product-title{font-size:14px;margin:0;color:#f1f5f9;font-weight:600;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+        .product-description{color:#94a3b8;font-size:12px;margin:0;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;flex-grow:1;min-height:0;}
+        .product-flavor{display:flex;flex-direction:column;gap:6px;margin-top:2px;}
+        .product-flavor-label{font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.06em;}
+        .product-flavor-select{width:100%;min-width:0;padding:9px 36px 9px 12px;font-size:13px;border:1px solid #334155;border-radius:10px;background:rgba(15,23,42,.8);color:#e2e8f0;cursor:pointer;appearance:none;box-sizing:border-box;}
+        .product-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:12px;border-top:1px solid rgba(51,65,85,.4);flex-shrink:0;}
+        .product-price{font-size:17px;font-weight:700;color:#93c5fd;white-space:nowrap;}
+        .product-btn-add{padding:10px 18px;font-size:13px;font-weight:600;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(180deg,#2563eb 0%,#1d4ed8 100%);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.35);}
+    </style>
+    @endif
     <style>
         body { background: linear-gradient(160deg, #0f172a 0%, #0c1929 50%, #0e1a2e 100%) !important; color: #e2e8f0 !important; margin: 0; padding: 0; padding-top: 52px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         .container { background: transparent !important; min-height: 100vh; }
