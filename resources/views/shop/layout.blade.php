@@ -11,21 +11,21 @@
         $isTelegramWebView = request()->header('User-Agent') && (stripos(request()->header('User-Agent'), 'Telegram') !== false || stripos(request()->header('User-Agent'), 'TelegramBot') !== false);
     @endphp
     @if($isTelegramWebView)
-    {{-- Резервні стилі картки товару для Telegram WebView (іноді зовнішній CSS не підвантажується) --}}
-    <style>
-        .products{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:18px;}
-        .product-card{background:linear-gradient(165deg,#1e293b 0%,#1a2744 35%,#192234 100%);border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.2);border:1px solid #334155;display:flex;flex-direction:column;min-height:0;}
-        .product-image{width:100%;aspect-ratio:3/4;overflow:hidden;background:#0f172a;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-        .product-image img{width:100%;height:100%;object-fit:cover;object-position:center top;}
-        .product-body{padding:14px 12px 12px;display:flex;flex-direction:column;gap:10px;flex:1;min-height:0;}
-        .product-title{font-size:14px;margin:0;color:#f1f5f9;font-weight:600;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-        .product-description{color:#94a3b8;font-size:12px;margin:0;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;flex-grow:1;min-height:0;}
-        .product-flavor{display:flex;flex-direction:column;gap:6px;margin-top:2px;}
-        .product-flavor-label{font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.06em;}
-        .product-flavor-select{width:100%;min-width:0;padding:9px 36px 9px 12px;font-size:13px;border:1px solid #334155;border-radius:10px;background:rgba(15,23,42,.8);color:#e2e8f0;cursor:pointer;appearance:none;box-sizing:border-box;}
-        .product-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:12px;border-top:1px solid rgba(51,65,85,.4);flex-shrink:0;}
-        .product-price{font-size:17px;font-weight:700;color:#93c5fd;white-space:nowrap;}
-        .product-btn-add{padding:10px 18px;font-size:13px;font-weight:600;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(180deg,#2563eb 0%,#1d4ed8 100%);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.35);}
+    {{-- Стилі картки товару для Telegram WebView: тільки сумісні властивості, без grid/aspect-ratio, з !important --}}
+    <style id="tg-shop-fallback">
+        .products{display:flex!important;flex-wrap:wrap!important;gap:16px!important;margin-top:18px!important;}
+        .product-card{width:100%!important;max-width:280px!important;background:#1e293b!important;border-radius:14px!important;overflow:hidden!important;border:1px solid #334155!important;display:flex!important;flex-direction:column!important;}
+        .product-image{width:100%!important;height:0!important;padding-bottom:133.33%!important;position:relative!important;overflow:hidden!important;background:#0f172a!important;}
+        .product-image img{position:absolute!important;top:0!important;left:0!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:center top!important;}
+        .product-body{padding:14px 12px 12px!important;display:flex!important;flex-direction:column!important;flex:1!important;}
+        .product-title{font-size:14px!important;margin:0 0 6px 0!important;color:#f1f5f9!important;font-weight:600!important;line-height:1.35!important;overflow:hidden!important;}
+        .product-description{color:#94a3b8!important;font-size:12px!important;margin:0 0 10px 0!important;line-height:1.4!important;overflow:hidden!important;}
+        .product-flavor{display:block!important;margin:0 0 10px 0!important;}
+        .product-flavor-label{display:block!important;font-size:11px!important;font-weight:600!important;color:#64748b!important;text-transform:uppercase!important;letter-spacing:0.06em!important;margin-bottom:6px!important;}
+        .product-flavor-select{display:block!important;width:100%!important;max-width:100%!important;padding:10px 12px!important;font-size:13px!important;border:1px solid #334155!important;border-radius:10px!important;background:#0f172a!important;color:#e2e8f0!important;cursor:pointer!important;box-sizing:border-box!important;-webkit-appearance:menulist!important;appearance:auto!important;}
+        .product-actions{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;padding-top:12px!important;border-top:1px solid #334155!important;margin-top:auto!important;}
+        .product-price{font-size:17px!important;font-weight:700!important;color:#93c5fd!important;}
+        .product-btn-add{padding:10px 18px!important;font-size:13px!important;font-weight:600!important;border-radius:10px!important;border:none!important;cursor:pointer!important;background:#2563eb!important;color:#fff!important;}
     </style>
     @endif
     <style>
