@@ -148,7 +148,7 @@
                                 </td>
                                 <td>
                                     @if($sale->telegram_username)
-                                        <a href="https://t.me/{{ $sale->telegram_username }}" target="_blank" rel="noopener" class="text-[#0088cc] hover:underline font-medium">@{{ $sale->telegram_username }}</a>
+                                        <a href="https://t.me/{{ $sale->telegram_username }}" target="_blank" rel="noopener" class="text-[#0088cc] hover:underline font-medium">{{ '@' . $sale->telegram_username }}</a>
                                     @elseif($sale->telegram_user_id)
                                         <span class="text-gray-500" title="ID">{{ $sale->telegram_user_id }}</span>
                                     @else

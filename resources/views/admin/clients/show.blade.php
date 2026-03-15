@@ -51,7 +51,7 @@
                     @if($client->telegram_username)
                         <div>
                             <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Telegram нік</dt>
-                            <dd class="text-gray-900 font-medium">@{{ $client->telegram_username }}</dd>
+                            <dd class="text-gray-900 font-medium">{{ $client->telegram_username ? '@' . $client->telegram_username : '—' }}</dd>
                         </div>
                     @endif
                     @if($client->telegram_user_id)
