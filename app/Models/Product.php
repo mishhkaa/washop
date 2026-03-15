@@ -31,6 +31,34 @@ class Product extends Model
         return $this->belongsTo(User::class, 'manager_id');
     }
 
+    public function variants()
+    {
+        return $this->hasMany(ProductVariant::class)->orderBy('sort_order')->orderBy('name');
+    }
+
+    public function hasVariants(): bool
+    {
+        return $this->variants()->exists();
+    }
+
+    /** Варіанти з залишком > 0 (для вибору в кошику) */
+    public function getAvailableVariantsAttribute()
+    {
+        return $this->variants()->where('quantity', '>', 0)->get();
+    }
+
+    /** Загальна кількість: сума по смаках або quantity товару */
+    public function getTotalQuantityAttribute(): int
+    {
+        if ($this->relationLoaded('variants') && $this->variants->isNotEmpty()) {
+            return (int) $this->variants->sum('quantity');
+        }
+        if ($this->hasVariants()) {
+            return (int) $this->variants()->sum('quantity');
+        }
+        return (int) ($this->quantity ?? 0);
+    }
+
     public function getImageUrlAttribute(): ?string
     {
         if (!$this->image_path) {

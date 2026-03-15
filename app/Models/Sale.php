@@ -23,6 +23,7 @@ class Sale extends Model
         'delivery_pickup_name',
         'delivery_pickup_phone',
         'delivery_pickup_district',
+        'delivery_pickup_day',
     ];
 
     protected $casts = [

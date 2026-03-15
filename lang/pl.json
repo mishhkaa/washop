@@ -59,10 +59,18 @@
     "Phone": "Telefon",
     "Phone placeholder": "np. +48 123 456 789",
     "District / area": "Dzielnica / rejon",
+    "Choose district": "Wybierz dzielnicę",
+    "Other district": "Inna (podaj)",
+    "Other district (specify)": "Inna dzielnica",
+    "e.g. Bielany": "np. Bielany",
+    "Preferred pickup day": "Dzień odbioru",
+    "Preferred pickup day placeholder": "np. jutro, piątek 20.03",
     "Required for Paczkomat": "Podaj kod paczkomatu.",
     "Required for pickup": "Wypełnij imię, telefon i rejon przy odbiorze osobistym.",
     "Your cashback": "Twój cashback",
     "Use cashback": "Użyj cashback (zł)",
     "Max to use": "Maks. do użycia",
-    "+ liquid as gift": "+ płyn w prezencie"
+    "+ liquid as gift": "+ płyn w prezencie",
+    "Choose flavor": "Wybierz smak",
+    "Flavor": "Smak"
 }

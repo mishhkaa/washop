@@ -60,7 +60,7 @@ class TelegramOrderNotification
 
         $total = 0;
         foreach ($sale->saleItems as $item) {
-            $name = $item->product?->name ?? 'Товар #' . $item->product_id;
+            $name = $item->display_name;
             $qty = $item->quantity;
             $price = (float) $item->sale_price;
             $sum = $price * $qty;
@@ -104,6 +104,9 @@ class TelegramOrderNotification
                 }
                 if (\Illuminate\Support\Facades\Schema::hasColumn('sales', 'delivery_pickup_district') && $sale->delivery_pickup_district) {
                     $lines[] = '  📍 Rejon: ' . self::escapeHtml($sale->delivery_pickup_district);
+                }
+                if (\Illuminate\Support\Facades\Schema::hasColumn('sales', 'delivery_pickup_day') && $sale->delivery_pickup_day) {
+                    $lines[] = '  📅 Dzień odbioru: ' . self::escapeHtml($sale->delivery_pickup_day);
                 }
             }
             $lines[] = '';

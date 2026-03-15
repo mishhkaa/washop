@@ -43,7 +43,7 @@
                     @if($sale->is_combined && $sale->saleItems->count() > 0)
                         @foreach($sale->saleItems as $item)
                             <li class="flex justify-between items-baseline gap-6">
-                                <span class="text-gray-700 min-w-0">{{ $item->product->name ?? '—' }} <span class="text-gray-400">× {{ $item->quantity }}</span></span>
+                                <span class="text-gray-700 min-w-0">{{ $item->display_name }} <span class="text-gray-400">× {{ $item->quantity }}</span></span>
                                 <span class="font-medium text-gray-900 tabular-nums shrink-0">{{ number_format(($item->sale_price ?? 0) * $item->quantity, 2) }} zł</span>
                             </li>
                         @endforeach
@@ -126,6 +126,55 @@
                     </dl>
                 </div>
             </section>
+
+            {{-- Доставка --}}
+            @if($sale->delivery_method)
+            <section class="crm-panel">
+                <div class="crm-panel__header">
+                    <h2 class="crm-panel__title">Доставка</h2>
+                </div>
+                <div class="crm-panel__body">
+                    <dl class="space-y-6">
+                        <div>
+                            <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Спосіб</dt>
+                            <dd class="text-gray-900">{{ $sale->delivery_method === 'paczkomat' ? 'Paczkomat InPost' : 'Особистий відбір' }}</dd>
+                        </div>
+                        @if($sale->delivery_method === 'paczkomat' && $sale->delivery_paczkomat_code)
+                            <div>
+                                <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Код paczkomatu</dt>
+                                <dd class="text-gray-900 font-mono">{{ $sale->delivery_paczkomat_code }}</dd>
+                            </div>
+                        @endif
+                        @if($sale->delivery_method === 'osobisty_odbior')
+                            @if($sale->delivery_pickup_name)
+                                <div>
+                                    <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Ім'я</dt>
+                                    <dd class="text-gray-900">{{ $sale->delivery_pickup_name }}</dd>
+                                </div>
+                            @endif
+                            @if($sale->delivery_pickup_phone)
+                                <div>
+                                    <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Телефон</dt>
+                                    <dd class="text-gray-900">{{ $sale->delivery_pickup_phone }}</dd>
+                                </div>
+                            @endif
+                            @if($sale->delivery_pickup_district)
+                                <div>
+                                    <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Район</dt>
+                                    <dd class="text-gray-900">{{ $sale->delivery_pickup_district }}</dd>
+                                </div>
+                            @endif
+                            @if(isset($sale->delivery_pickup_day) && $sale->delivery_pickup_day)
+                                <div>
+                                    <dt class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">День забрання</dt>
+                                    <dd class="text-gray-900">{{ $sale->delivery_pickup_day }}</dd>
+                                </div>
+                            @endif
+                        @endif
+                    </dl>
+                </div>
+            </section>
+            @endif
 
             {{-- Менеджер --}}
             <section class="crm-panel">

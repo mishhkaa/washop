@@ -59,10 +59,18 @@
     "Phone": "Phone",
     "Phone placeholder": "+48 ...",
     "District / area": "District / area",
+    "Choose district": "Choose district",
+    "Other district": "Other (specify)",
+    "Other district (specify)": "Other district",
+    "e.g. Bielany": "e.g. Bielany",
+    "Preferred pickup day": "Preferred pickup day",
+    "Preferred pickup day placeholder": "e.g. tomorrow, Friday 20.03",
     "Required for Paczkomat": "Please enter the Paczkomat code.",
     "Required for pickup": "Please fill in name, phone and district for personal pickup.",
     "Your cashback": "Your cashback",
     "Use cashback": "Use cashback (zł)",
     "Max to use": "Max to use",
-    "+ liquid as gift": "+ liquid as gift"
+    "+ liquid as gift": "+ liquid as gift",
+    "Choose flavor": "Choose flavor",
+    "Flavor": "Flavor"
 }

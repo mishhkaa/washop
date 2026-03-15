@@ -59,10 +59,18 @@
     "Phone": "Телефон",
     "Phone placeholder": "+48 ...",
     "District / area": "Район / регіон",
+    "Choose district": "Оберіть район",
+    "Other district": "Інший (вкажіть)",
+    "Other district (specify)": "Інший район",
+    "e.g. Bielany": "напр. Біляни",
+    "Preferred pickup day": "День зручного забрання",
+    "Preferred pickup day placeholder": "напр. завтра, п’ятниця 20.03",
     "Required for Paczkomat": "Вкажіть код пачкомата.",
     "Required for pickup": "Заповніть ім'я, телефон і район при особистому відборі.",
     "Your cashback": "Ваш кешбек",
     "Use cashback": "Списати з кешбеку (zł)",
     "Max to use": "Макс. до списання",
-    "+ liquid as gift": "+ рідина в подарунок"
+    "+ liquid as gift": "+ рідина в подарунок",
+    "Choose flavor": "Оберіть смак",
+    "Flavor": "Смак"
 }

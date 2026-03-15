@@ -59,8 +59,30 @@
             </div>
 
             <div class="form-group">
-                <label for="quantity">Кількість на складі</label>
+                <label for="quantity">Кількість на складі (якщо без смаків)</label>
                 <input type="number" id="quantity" name="quantity" min="0" value="{{ old('quantity', $product->quantity ?? 0) }}" placeholder="0">
+                <p class="mt-1 text-sm text-gray-500">Якщо нижче додано смаки — залишок ведеться по кожному смаку окремо.</p>
+            </div>
+
+            <div class="form-group p-6 rounded-2xl border-2 border-dashed border-amber-200 bg-amber-50/50">
+                <h3 class="text-base font-semibold text-gray-900 mb-2">Смаки / асортимент</h3>
+                <p class="text-sm text-gray-600 mb-4">Додайте варіанти (наприклад смаки). На сайті клієнт обере смак при додаванні в кошик. Залишок — по кожному смаку окремо.</p>
+                <div id="variants-list">
+                    @php
+                        $variantsForForm = old('variants', $product->variants->map(fn($v) => ['name' => $v->name, 'quantity' => $v->quantity])->toArray());
+                        if (empty($variantsForForm)) {
+                            $variantsForForm = [['name' => '', 'quantity' => 0]];
+                        }
+                    @endphp
+                    @foreach($variantsForForm as $idx => $v)
+                        <div class="flex flex-wrap items-center gap-2 mb-2 variant-row">
+                            <input type="text" name="variants[{{ $idx }}][name]" value="{{ $v['name'] ?? '' }}" placeholder="Смак" class="flex-1 min-w-[120px] px-3 py-2 border border-gray-300 rounded-lg">
+                            <input type="number" name="variants[{{ $idx }}][quantity]" value="{{ $v['quantity'] ?? 0 }}" min="0" placeholder="К-сть" class="w-24 px-3 py-2 border border-gray-300 rounded-lg">
+                            <button type="button" class="variant-remove px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm">Видалити</button>
+                        </div>
+                    @endforeach
+                </div>
+                <button type="button" id="variant-add" class="mt-2 px-4 py-2 bg-amber-100 text-amber-800 rounded-lg text-sm font-medium hover:bg-amber-200">+ Додати смак</button>
             </div>
 
             <div class="form-group">
@@ -106,4 +128,27 @@
         </form>
     </div>
 </div>
+@push('scripts')
+<script>
+(function() {
+    var list = document.getElementById('variants-list');
+    var addBtn = document.getElementById('variant-add');
+    if (!list || !addBtn) return;
+    var idx = list.querySelectorAll('.variant-row').length;
+    addBtn.addEventListener('click', function() {
+        var row = document.createElement('div');
+        row.className = 'flex flex-wrap items-center gap-2 mb-2 variant-row';
+        row.innerHTML = '<input type="text" name="variants[' + idx + '][name]" value="" placeholder="Смак" class="flex-1 min-w-[120px] px-3 py-2 border border-gray-300 rounded-lg">' +
+            '<input type="number" name="variants[' + idx + '][quantity]" value="0" min="0" placeholder="К-сть" class="w-24 px-3 py-2 border border-gray-300 rounded-lg">' +
+            '<button type="button" class="variant-remove px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm">Видалити</button>';
+        list.appendChild(row);
+        idx++;
+        row.querySelector('.variant-remove').addEventListener('click', function() { row.remove(); });
+    });
+    list.querySelectorAll('.variant-remove').forEach(function(btn) {
+        btn.addEventListener('click', function() { btn.closest('.variant-row').remove(); });
+    });
+})();
+</script>
+@endpush
 @endsection

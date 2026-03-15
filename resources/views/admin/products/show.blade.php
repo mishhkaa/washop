@@ -20,7 +20,27 @@
 
             <div>
                 <label class="text-sm font-semibold text-gray-700">Кількість на складі</label>
-                <p class="text-gray-900">{{ $product->quantity ?? 0 }}</p>
+                @if($product->hasVariants())
+                    <p class="text-gray-900">Всього: {{ $product->total_quantity }} (асортимент по смаках)</p>
+                    <table class="mt-2 min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden border border-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Смак</th>
+                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Залишок</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @foreach($product->variants as $v)
+                                <tr>
+                                    <td class="px-4 py-2 text-sm text-gray-900">{{ $v->name }}</td>
+                                    <td class="px-4 py-2 text-sm text-gray-900 text-right">{{ $v->quantity }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @else
+                    <p class="text-gray-900">{{ $product->quantity ?? 0 }}</p>
+                @endif
             </div>
 
             @if($product->description)

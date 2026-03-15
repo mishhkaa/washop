@@ -67,10 +67,20 @@
             <p class="product-description">{{ $product->description ? Str::limit($product->description, 60) : '—' }}</p>
             <div class="product-footer">
                 <span class="price">{{ number_format($product->purchase_price ?? 0, 0) }} zł</span>
-                <form action="{{ route('shop.cart.add') }}" method="POST" class="inline" style="display: inline;">
+                <form action="{{ route('shop.cart.add') }}" method="POST" class="product-add-form" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                     @csrf
                     <input type="hidden" name="product_id" value="{{ $product->id }}">
                     <input type="hidden" name="quantity" value="1">
+                    @if($product->hasVariants() && $product->availableVariants->isNotEmpty())
+                        <select name="variant_id" class="product-variant-select" required style="min-width: 100px; padding: 6px 10px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; font-size: 13px;">
+                            <option value="">{{ __('Choose flavor') }}</option>
+                            @foreach($product->availableVariants as $v)
+                                <option value="{{ $v->id }}">{{ $v->name }}</option>
+                            @endforeach
+                        </select>
+                    @else
+                        <input type="hidden" name="variant_id" value="0">
+                    @endif
                     <button type="submit" class="btn-add">{{ __('Add') }}</button>
                 </form>
             </div>

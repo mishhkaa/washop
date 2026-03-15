@@ -84,7 +84,13 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{{ $product->id }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $product->name }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">{{ number_format($product->purchase_price ?? 0, 2) }} zł</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->quantity ?? 0 }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500">
+                                @if($product->hasVariants())
+                                    {{ $product->total_quantity }} <span class="text-gray-400">({{ $product->variants->count() }} смаків)</span>
+                                @else
+                                    {{ $product->quantity ?? 0 }}
+                                @endif
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                 @if($product->manager)
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
@@ -135,7 +141,7 @@
                             </div>
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-500">Кількість на складі:</span>
-                                <span class="font-medium">{{ $product->quantity ?? 0 }}</span>
+                                <span class="font-medium">@if($product->hasVariants()){{ $product->total_quantity }} ({{ $product->variants->count() }} смаків)@else{{ $product->quantity ?? 0 }}@endif</span>
                             </div>
                             <div class="flex justify-between text-sm items-center">
                                 <span class="text-gray-500">Менеджер:</span>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\ShopCategory;
@@ -15,9 +16,33 @@ use Illuminate\Support\Facades\Schema;
 
 class ShopController extends Controller
 {
+    /** Нормалізує кошик до формату [ key => [product_id, variant_id, quantity] ] */
+    private function normalizeCart(array $cart): array
+    {
+        $out = [];
+        foreach ($cart as $key => $val) {
+            if (is_array($val) && isset($val['product_id'], $val['quantity'])) {
+                $k = 'p' . (int) $val['product_id'] . '_v' . (int) ($val['variant_id'] ?? 0);
+                $out[$k] = ['product_id' => (int) $val['product_id'], 'variant_id' => (int) ($val['variant_id'] ?? 0), 'quantity' => (int) $val['quantity']];
+            } elseif (is_numeric($key) && (is_numeric($val) || is_array($val))) {
+                $qty = is_array($val) ? (int) ($val['quantity'] ?? 0) : (int) $val;
+                if ($qty > 0) {
+                    $k = 'p' . (int) $key . '_v0';
+                    $out[$k] = ['product_id' => (int) $key, 'variant_id' => 0, 'quantity' => $qty];
+                }
+            }
+        }
+        return $out;
+    }
+
     public function index(Request $request)
     {
-        $query = Product::where('available_in_bot', true)->where('quantity', '>', 0);
+        $query = Product::where('available_in_bot', true)
+            ->where(function ($q) {
+                $q->where('quantity', '>', 0)
+                    ->orWhereHas('variants', fn ($v) => $v->where('quantity', '>', 0));
+            })
+            ->with('variants');
 
         if ($request->filled('category')) {
             $query->where('shop_category', $request->category);
@@ -53,45 +78,75 @@ class ShopController extends Controller
 
     public function addToCart(Request $request)
     {
-        $request->validate(['product_id' => 'required|exists:products,id', 'quantity' => 'nullable|integer|min:1']);
-        $id = (int) $request->product_id;
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'variant_id' => 'nullable|integer|min:0',
+            'quantity' => 'nullable|integer|min:1',
+        ]);
+        $productId = (int) $request->product_id;
+        $variantId = $request->has('variant_id') ? (int) $request->variant_id : 0;
         $qty = (int) ($request->quantity ?? 1);
-        $product = Product::where('id', $id)->where('available_in_bot', true)->where('quantity', '>=', $qty)->firstOrFail();
+        $product = Product::where('id', $productId)->where('available_in_bot', true)->with('variants')->firstOrFail();
+
+        if ($product->hasVariants()) {
+            if ($variantId <= 0) {
+                return back()->with('error', __('Choose flavor'));
+            }
+            $variant = $product->variants()->where('id', $variantId)->where('quantity', '>=', $qty)->firstOrFail();
+        } else {
+            if ($variantId !== 0) {
+                return back()->with('error', __('Error'));
+            }
+            if (($product->quantity ?? 0) < $qty) {
+                return back()->with('error', __('Insufficient product'));
+            }
+        }
+
         $cart = $request->session()->get('shop_cart', []);
-        $cart[$id] = ($cart[$id] ?? 0) + $qty;
+        $key = 'p' . $productId . '_v' . $variantId;
+        $cart[$key] = [
+            'product_id' => $productId,
+            'variant_id' => $variantId,
+            'quantity' => ($cart[$key]['quantity'] ?? 0) + $qty,
+        ];
         $request->session()->put('shop_cart', $cart);
         if ($request->wantsJson()) {
-            return response()->json(['ok' => true, 'count' => array_sum($cart)]);
+            return response()->json(['ok' => true, 'count' => array_sum(array_column($cart, 'quantity'))]);
         }
-        return redirect()->route('shop.cart')->with('success', __('Added to cart'));
+        return redirect()->route('shop.home')->with('success', __('Added to cart'));
     }
 
     public function updateCart(Request $request)
     {
-        $request->validate(['product_id' => 'required|exists:products,id', 'quantity' => 'required|integer|min:0']);
-        $id = (int) $request->product_id;
+        $request->validate([
+            'cart_key' => 'required|string|max:64',
+            'quantity' => 'required|integer|min:0',
+        ]);
+        $key = $request->cart_key;
         $qty = (int) $request->quantity;
         $cart = $request->session()->get('shop_cart', []);
         if ($qty <= 0) {
-            unset($cart[$id]);
+            unset($cart[$key]);
         } else {
-            $cart[$id] = $qty;
+            if (isset($cart[$key])) {
+                $cart[$key]['quantity'] = $qty;
+            }
         }
         $request->session()->put('shop_cart', $cart);
         if ($request->wantsJson()) {
-            return response()->json(['ok' => true, 'count' => array_sum($cart)]);
+            return response()->json(['ok' => true, 'count' => array_sum(array_column($cart, 'quantity'))]);
         }
         return redirect()->back()->with('open_cart', true);
     }
 
     public function removeFromCart(Request $request)
     {
-        $request->validate(['product_id' => 'required|exists:products,id']);
+        $request->validate(['cart_key' => 'required|string|max:64']);
         $cart = $request->session()->get('shop_cart', []);
-        unset($cart[(int) $request->product_id]);
+        unset($cart[$request->cart_key]);
         $request->session()->put('shop_cart', $cart);
         if ($request->wantsJson()) {
-            return response()->json(['ok' => true, 'count' => array_sum($cart)]);
+            return response()->json(['ok' => true, 'count' => array_sum(array_column($cart, 'quantity'))]);
         }
         return redirect()->back()->with('open_cart', true);
     }
@@ -113,19 +168,37 @@ class ShopController extends Controller
 
     public function checkoutForm(Request $request)
     {
-        $cart = $request->session()->get('shop_cart', []);
+        $cart = $this->normalizeCart($request->session()->get('shop_cart', []));
         if (empty($cart)) {
             return redirect()->route('shop.home')->with('message', __('Cart is empty'));
         }
-        $productIds = array_keys($cart);
-        $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
+        $productIds = array_unique(array_column($cart, 'product_id'));
+        $products = Product::whereIn('id', $productIds)->with('variants')->get()->keyBy('id');
         $items = [];
         $orderTotal = 0;
-        foreach ($cart as $id => $qty) {
-            if (isset($products[$id])) {
-                $items[] = (object)['product' => $products[$id], 'quantity' => (int) $qty];
-                $orderTotal += $products[$id]->purchase_price * $qty;
+        foreach ($cart as $key => $entry) {
+            $productId = (int) ($entry['product_id'] ?? 0);
+            $variantId = (int) ($entry['variant_id'] ?? 0);
+            $qty = (int) ($entry['quantity'] ?? 0);
+            if ($qty <= 0 || !isset($products[$productId])) {
+                continue;
             }
+            $product = $products[$productId];
+            $variant = null;
+            $variantName = null;
+            if ($variantId > 0) {
+                $variant = $product->variants->firstWhere('id', $variantId);
+                $variantName = $variant?->name;
+            }
+            $price = (float) $product->purchase_price;
+            $items[] = (object)[
+                'cart_key' => $key,
+                'product' => $product,
+                'variant' => $variant,
+                'variant_name' => $variantName,
+                'quantity' => $qty,
+            ];
+            $orderTotal += $price * $qty;
         }
         $client = null;
         $tid = $request->input('telegram_user_id') ?: session('shop_telegram_user_id');
@@ -153,24 +226,49 @@ class ShopController extends Controller
             $rules['delivery_pickup_name'] = 'required|string|max:255';
             $rules['delivery_pickup_phone'] = 'required|string|max:64';
             $rules['delivery_pickup_district'] = 'required|string|max:255';
+            $rules['delivery_pickup_day'] = 'required|string|max:255';
             $messages['delivery_pickup_name.required'] = __('Required for pickup');
             $messages['delivery_pickup_phone.required'] = __('Required for pickup');
             $messages['delivery_pickup_district.required'] = __('Required for pickup');
+            $messages['delivery_pickup_day.required'] = __('Required for pickup');
+            if ($request->input('delivery_pickup_district') === 'other') {
+                $rules['delivery_pickup_district_other'] = 'required|string|max:255';
+                $messages['delivery_pickup_district_other.required'] = __('Required for pickup');
+            }
         }
         $rules['use_cashback'] = 'nullable|numeric|min:0';
         $request->validate($rules, $messages);
-        $cart = $request->session()->get('shop_cart', []);
+        $cart = $this->normalizeCart($request->session()->get('shop_cart', []));
         if (empty($cart)) {
             return redirect()->route('shop.home')->with('message', __('Cart is empty'));
         }
-        $productIds = array_keys($cart);
-        $products = Product::whereIn('id', $productIds)->where('available_in_bot', true)->get()->keyBy('id');
+        $productIds = array_unique(array_column($cart, 'product_id'));
+        $products = Product::whereIn('id', $productIds)->where('available_in_bot', true)->with('variants')->get()->keyBy('id');
         $orderItems = [];
-        foreach ($cart as $id => $qty) {
-            if (!isset($products[$id]) || ($products[$id]->quantity ?? 0) < $qty) {
-                return back()->with('error', __('Insufficient product'));
+        foreach ($cart as $entry) {
+            $productId = (int) ($entry['product_id'] ?? 0);
+            $variantId = (int) ($entry['variant_id'] ?? 0);
+            $qty = (int) ($entry['quantity'] ?? 0);
+            if ($qty <= 0 || !isset($products[$productId])) {
+                continue;
             }
-            $orderItems[] = ['product' => $products[$id], 'quantity' => (int) $qty];
+            $product = $products[$productId];
+            $variant = $variantId > 0 ? $product->variants->firstWhere('id', $variantId) : null;
+            if ($product->hasVariants()) {
+                if (!$variant || ($variant->quantity ?? 0) < $qty) {
+                    return back()->with('error', __('Insufficient product'));
+                }
+            } else {
+                if (($product->quantity ?? 0) < $qty) {
+                    return back()->with('error', __('Insufficient product'));
+                }
+            }
+            $orderItems[] = [
+                'product' => $product,
+                'variant' => $variant,
+                'variant_name' => $variant?->name,
+                'quantity' => $qty,
+            ];
         }
 
         try {
@@ -186,14 +284,21 @@ class ShopController extends Controller
                 $saleItemsData = [];
                 foreach ($orderItems as $item) {
                     $product = Product::lockForUpdate()->findOrFail($item['product']->id);
+                    $variant = $item['variant'];
                     $qty = $item['quantity'];
                     $salePrice = (float) $product->purchase_price;
-                    $product->decrement('quantity', $qty);
+                    if ($variant) {
+                        ProductVariant::where('id', $variant->id)->where('product_id', $product->id)->decrement('quantity', $qty);
+                    } else {
+                        $product->decrement('quantity', $qty);
+                    }
                     $profit = ($salePrice - ($product->purchase_price ?? 0)) * $qty;
                     $totalProfit += $profit;
                     $orderTotal += $salePrice * $qty;
                     $saleItemsData[] = [
                         'product' => $product,
+                        'product_variant_id' => $variant?->id,
+                        'variant_name' => $item['variant_name'],
                         'quantity' => $qty,
                         'sale_price' => $salePrice,
                         'profit' => $profit,
@@ -234,13 +339,22 @@ class ShopController extends Controller
                 if (Schema::hasColumn('sales', 'delivery_pickup_name')) {
                     $saleData['delivery_pickup_name'] = $request->input('delivery_method') === 'osobisty_odbior' ? trim((string) $request->input('delivery_pickup_name')) : null;
                     $saleData['delivery_pickup_phone'] = $request->input('delivery_method') === 'osobisty_odbior' ? trim((string) $request->input('delivery_pickup_phone')) : null;
-                    $saleData['delivery_pickup_district'] = $request->input('delivery_method') === 'osobisty_odbior' ? trim((string) $request->input('delivery_pickup_district')) : null;
+                    $district = $request->input('delivery_method') === 'osobisty_odbior' ? trim((string) $request->input('delivery_pickup_district')) : null;
+                    if ($district === 'other' && $request->filled('delivery_pickup_district_other')) {
+                        $district = trim((string) $request->input('delivery_pickup_district_other'));
+                    }
+                    $saleData['delivery_pickup_district'] = $district;
+                    if (Schema::hasColumn('sales', 'delivery_pickup_day')) {
+                        $saleData['delivery_pickup_day'] = $request->input('delivery_method') === 'osobisty_odbior' ? trim((string) $request->input('delivery_pickup_day')) : null;
+                    }
                 }
                 $sale = Sale::create($saleData);
                 foreach ($saleItemsData as $data) {
                     SaleItem::create([
                         'sale_id' => $sale->id,
                         'product_id' => $data['product']->id,
+                        'product_variant_id' => $data['product_variant_id'] ?? null,
+                        'variant_name' => $data['variant_name'] ?? null,
                         'quantity' => $data['quantity'],
                         'sale_price' => $data['sale_price'],
                         'profit' => $data['profit'],

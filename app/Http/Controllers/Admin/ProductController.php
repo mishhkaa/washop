@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\ShopCategory;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -40,7 +41,7 @@ class ProductController extends Controller
             $query->where('quantity', '<=', (int)$request->max_quantity);
         }
         
-        $products = $query->orderBy('created_at', 'desc')->get();
+        $products = $query->with('variants')->orderBy('created_at', 'desc')->get();
         
         // Дані для фільтрів
         $managers = \App\Models\User::where('role', 'manager')->get();
@@ -100,6 +101,26 @@ class ProductController extends Controller
 
         $product = Product::create($validated);
 
+        $variantsInput = $request->input('variants', []);
+        if (is_array($variantsInput)) {
+            $sortOrder = 0;
+            foreach ($variantsInput as $row) {
+                $name = trim((string) ($row['name'] ?? ''));
+                $qty = (int) ($row['quantity'] ?? 0);
+                if ($name === '' && $qty <= 0) {
+                    continue;
+                }
+                if ($name === '') {
+                    $name = '—';
+                }
+                $product->variants()->create([
+                    'name' => $name,
+                    'quantity' => max(0, $qty),
+                    'sort_order' => $sortOrder++,
+                ]);
+            }
+        }
+
         $message = 'Товар успішно створений';
         if ($imageError) {
             return redirect()->route('admin.products.edit', $product)
@@ -112,11 +133,13 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
+        $product->load('variants');
         return view('admin.products.show', compact('product'));
     }
 
     public function edit(Product $product)
     {
+        $product->load('variants');
         $managers = User::where('role', 'manager')->get();
         $shopCategories = ShopCategory::orderBy('sort_order')->get();
         return view('admin.products.edit', compact('product', 'managers', 'shopCategories'));
@@ -138,6 +161,11 @@ class ProductController extends Controller
         $validated['shop_category'] = $request->input('shop_category') ?: null;
         if (! Schema::hasColumn('products', 'description')) {
             unset($validated['description']);
+        }
+
+        $variantsInput = $request->input('variants', []);
+        if (!is_array($variantsInput)) {
+            $variantsInput = [];
         }
 
         $imageError = null;
@@ -169,6 +197,24 @@ class ProductController extends Controller
         }
 
         $product->update($validated);
+
+        $product->variants()->delete();
+        $sortOrder = 0;
+        foreach ($variantsInput as $row) {
+            $name = trim((string) ($row['name'] ?? ''));
+            $qty = (int) ($row['quantity'] ?? 0);
+            if ($name === '' && $qty <= 0) {
+                continue;
+            }
+            if ($name === '') {
+                $name = '—';
+            }
+            $product->variants()->create([
+                'name' => $name,
+                'quantity' => max(0, $qty),
+                'sort_order' => $sortOrder++,
+            ]);
+        }
 
         $message = 'Товар успішно оновлений';
         if ($imageError) {
