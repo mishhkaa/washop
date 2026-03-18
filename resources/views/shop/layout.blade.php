@@ -74,10 +74,28 @@
         .checkout-page .btn-checkout-submit { background: #2563eb !important; color: #fff !important; border: none !important; border-radius: 8px !important; font-size: 16px !important; }
         .checkout-page .checkout-back-link,
         .checkout-page .checkout-link-back { color: #60a5fa !important; }
+
+        /* Start delivery choice modal */
+        .delivery-choice-modal { position: fixed; inset: 0; z-index: 3000; display: none; }
+        .delivery-choice-modal.open { display: block; }
+        .delivery-choice-backdrop { position: absolute; inset: 0; background: rgba(2,6,23,0.72); backdrop-filter: blur(6px); }
+        .delivery-choice-box { position: relative; margin: 0 auto; margin-top: 80px; width: min(520px, calc(100% - 32px)); background: linear-gradient(165deg, #1e293b 0%, #16233a 55%, #151f32 100%); border: 1px solid rgba(148,163,184,0.18); border-radius: 16px; padding: 18px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+        .delivery-choice-title { margin: 0 0 6px 0; color: #f1f5f9; font-size: 18px; font-weight: 700; }
+        .delivery-choice-sub { margin: 0 0 14px 0; color: #94a3b8; font-size: 13px; line-height: 1.35; }
+        .delivery-choice-grid { display: grid; gap: 10px; }
+        .delivery-choice-btn { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 14px; border-radius: 12px; text-decoration: none; border: 1px solid rgba(148,163,184,0.2); background: rgba(15,23,42,0.6); color: #e2e8f0; cursor: pointer; }
+        .delivery-choice-btn:hover { border-color: rgba(96,165,250,0.5); background: rgba(37,99,235,0.18); }
+        .delivery-choice-btn strong { font-size: 14px; font-weight: 700; }
+        .delivery-choice-btn span { font-size: 12px; color: #94a3b8; }
+        .delivery-step { display: none; }
+        .delivery-step.active { display: block; }
+        .delivery-step-actions { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .delivery-back { background: transparent; border: 1px solid rgba(148,163,184,0.25); color: #94a3b8; border-radius: 10px; padding: 10px 12px; cursor: pointer; }
+        .delivery-back:hover { color: #e2e8f0; border-color: rgba(148,163,184,0.4); }
     </style>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
-<body @if(session('open_cart')) data-open-cart="1" @endif>
+<body @if(session('open_cart')) data-open-cart="1" @endif @if(!empty($showDeliveryChoiceModal)) data-delivery-modal="1" style="overflow:hidden;" @endif>
     <script>
     (function(){if(typeof Telegram!=='undefined'&&Telegram.WebApp){document.body.classList.add('tg-webapp');}else{window.addEventListener('load',function(){if(typeof Telegram!=='undefined'&&Telegram.WebApp){document.body.classList.add('tg-webapp');}});var t=0;var iv=setInterval(function(){t++;if(typeof Telegram!=='undefined'&&Telegram.WebApp){document.body.classList.add('tg-webapp');clearInterval(iv);}else if(t>40){clearInterval(iv);}},50);})();
     </script>
@@ -193,6 +211,64 @@
         </div>
     </div>
 
+    {{-- Popup вибору доставки на старті (показуємо до першого вибору) --}}
+    @if(!empty($showDeliveryChoiceModal) && request()->routeIs('shop.home'))
+        @php
+            $districtU = \App\Models\Product::DISTRICT_URSYNOW;
+            $districtP = \App\Models\Product::DISTRICT_PRAGA;
+            $baseParams = request()->only('category', 'search', 'sort', 'price');
+        @endphp
+        <div id="deliveryChoiceModal" class="delivery-choice-modal open" aria-hidden="false">
+            <div class="delivery-choice-backdrop"></div>
+            <div class="delivery-choice-box" role="dialog" aria-modal="true" aria-labelledby="deliveryChoiceTitle">
+                <h2 id="deliveryChoiceTitle" class="delivery-choice-title">{{ __('Choose delivery method') }}</h2>
+                <p class="delivery-choice-sub">{{ __('Please choose delivery method') }}</p>
+
+                <div class="delivery-step active" id="deliveryStep1">
+                    <div class="delivery-choice-grid">
+                        <a class="delivery-choice-btn" href="{{ route('shop.home', $baseParams + ['delivery_method' => 'paczkomat', 'district' => '']) }}">
+                            <div>
+                                <strong>{{ __('Paczkomat InPost') }}</strong><br>
+                                <span>{{ __('Delivery') }}</span>
+                            </div>
+                            <div style="color:#93c5fd; font-weight:700;">→</div>
+                        </a>
+                        <button type="button" class="delivery-choice-btn" id="pickupChooseBtn">
+                            <div>
+                                <strong>{{ __('Personal pickup') }}</strong><br>
+                                <span>{{ __('Pickup at point') }}</span>
+                            </div>
+                            <div style="color:#93c5fd; font-weight:700;">→</div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="delivery-step" id="deliveryStep2">
+                    <div class="delivery-choice-grid">
+                        <a class="delivery-choice-btn" href="{{ route('shop.home', $baseParams + ['delivery_method' => 'osobisty', 'district' => $districtU]) }}">
+                            <div>
+                                <strong>{{ $districtU }}</strong><br>
+                                <span>{{ __('Pickup') }}</span>
+                            </div>
+                            <div style="color:#93c5fd; font-weight:700;">→</div>
+                        </a>
+                        <a class="delivery-choice-btn" href="{{ route('shop.home', $baseParams + ['delivery_method' => 'osobisty', 'district' => $districtP]) }}">
+                            <div>
+                                <strong>{{ $districtP }}</strong><br>
+                                <span>{{ __('Pickup') }}</span>
+                            </div>
+                            <div style="color:#93c5fd; font-weight:700;">→</div>
+                        </a>
+                    </div>
+                    <div class="delivery-step-actions">
+                        <button type="button" class="delivery-back" id="deliveryBackBtn">← {{ __('Back') }}</button>
+                        <span style="color:#64748b; font-size: 12px;">{{ __('District / area') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     @stack('scripts')
     <script>
         document.getElementById('mobileMenuToggle')?.addEventListener('click', function() {
@@ -245,5 +321,24 @@
             wrap.addEventListener('click', function(e) { e.stopPropagation(); });
         })();
     </script>
+    @if(!empty($showDeliveryChoiceModal) && request()->routeIs('shop.home'))
+        <script>
+        (function() {
+            var step1 = document.getElementById('deliveryStep1');
+            var step2 = document.getElementById('deliveryStep2');
+            var pickupBtn = document.getElementById('pickupChooseBtn');
+            var backBtn = document.getElementById('deliveryBackBtn');
+            if (!step1 || !step2 || !pickupBtn || !backBtn) return;
+            pickupBtn.addEventListener('click', function() {
+                step1.classList.remove('active');
+                step2.classList.add('active');
+            });
+            backBtn.addEventListener('click', function() {
+                step2.classList.remove('active');
+                step1.classList.add('active');
+            });
+        })();
+        </script>
+    @endif
 </body>
 </html>

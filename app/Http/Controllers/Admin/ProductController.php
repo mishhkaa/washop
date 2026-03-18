@@ -65,6 +65,8 @@ class ProductController extends Controller
             'purchase_price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
             'quantity' => 'nullable|integer|min:0',
+            'quantity_ursynow' => 'nullable|integer|min:0',
+            'quantity_praga' => 'nullable|integer|min:0',
             'manager_id' => 'nullable|exists:users,id',
             'available_in_bot' => 'nullable|boolean',
             'shop_category' => 'nullable|string|exists:shop_categories,slug',
@@ -72,11 +74,18 @@ class ProductController extends Controller
         $validated['available_in_bot'] = $request->boolean('available_in_bot');
         $validated['shop_category'] = $request->input('shop_category') ?: null;
         $validated['sale_price'] = $request->filled('sale_price') ? (float) $request->input('sale_price') : null;
+        $validated['quantity_ursynow'] = (int) ($request->input('quantity_ursynow') ?? 0);
+        $validated['quantity_praga'] = (int) ($request->input('quantity_praga') ?? 0);
+        $validated['quantity'] = $validated['quantity_ursynow'] + $validated['quantity_praga'];
         if (! Schema::hasColumn('products', 'description')) {
             unset($validated['description']);
         }
         if (! Schema::hasColumn('products', 'sale_price')) {
             unset($validated['sale_price']);
+        }
+        if (! Schema::hasColumn('products', 'quantity_ursynow')) {
+            unset($validated['quantity_ursynow'], $validated['quantity_praga']);
+            $validated['quantity'] = (int) ($request->input('quantity') ?? 0);
         }
 
         $imageError = null;
@@ -111,18 +120,24 @@ class ProductController extends Controller
             $sortOrder = 0;
             foreach ($variantsInput as $row) {
                 $name = trim((string) ($row['name'] ?? ''));
-                $qty = (int) ($row['quantity'] ?? 0);
-                if ($name === '' && $qty <= 0) {
+                $qtyU = (int) ($row['quantity_ursynow'] ?? 0);
+                $qtyP = (int) ($row['quantity_praga'] ?? 0);
+                $qty = (int) ($row['quantity'] ?? ($qtyU + $qtyP));
+                if ($name === '' && $qty <= 0 && $qtyU <= 0 && $qtyP <= 0) {
                     continue;
                 }
                 if ($name === '') {
                     $name = '—';
                 }
-                $product->variants()->create([
-                    'name' => $name,
-                    'quantity' => max(0, $qty),
-                    'sort_order' => $sortOrder++,
-                ]);
+                $data = ['name' => $name, 'sort_order' => $sortOrder++];
+                if (Schema::hasColumn('product_variants', 'quantity_ursynow')) {
+                    $data['quantity_ursynow'] = $qtyU;
+                    $data['quantity_praga'] = $qtyP;
+                    $data['quantity'] = $qtyU + $qtyP;
+                } else {
+                    $data['quantity'] = $qty;
+                }
+                $product->variants()->create($data);
             }
         }
 
@@ -159,6 +174,8 @@ class ProductController extends Controller
             'purchase_price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
             'quantity' => 'nullable|integer|min:0',
+            'quantity_ursynow' => 'nullable|integer|min:0',
+            'quantity_praga' => 'nullable|integer|min:0',
             'manager_id' => 'nullable|exists:users,id',
             'available_in_bot' => 'nullable|boolean',
             'shop_category' => 'nullable|string|exists:shop_categories,slug',
@@ -166,11 +183,19 @@ class ProductController extends Controller
         $validated['available_in_bot'] = $request->boolean('available_in_bot');
         $validated['shop_category'] = $request->input('shop_category') ?: null;
         $validated['sale_price'] = $request->filled('sale_price') ? (float) $request->input('sale_price') : null;
+        if (Schema::hasColumn('products', 'quantity_ursynow')) {
+            $validated['quantity_ursynow'] = (int) ($request->input('quantity_ursynow') ?? 0);
+            $validated['quantity_praga'] = (int) ($request->input('quantity_praga') ?? 0);
+            $validated['quantity'] = $validated['quantity_ursynow'] + $validated['quantity_praga'];
+        }
         if (! Schema::hasColumn('products', 'description')) {
             unset($validated['description']);
         }
         if (! Schema::hasColumn('products', 'sale_price')) {
             unset($validated['sale_price']);
+        }
+        if (! Schema::hasColumn('products', 'quantity_ursynow')) {
+            unset($validated['quantity_ursynow'], $validated['quantity_praga']);
         }
 
         $variantsInput = $request->input('variants', []);
@@ -212,18 +237,24 @@ class ProductController extends Controller
         $sortOrder = 0;
         foreach ($variantsInput as $row) {
             $name = trim((string) ($row['name'] ?? ''));
-            $qty = (int) ($row['quantity'] ?? 0);
-            if ($name === '' && $qty <= 0) {
+            $qtyU = (int) ($row['quantity_ursynow'] ?? 0);
+            $qtyP = (int) ($row['quantity_praga'] ?? 0);
+            $qty = (int) ($row['quantity'] ?? ($qtyU + $qtyP));
+            if ($name === '' && $qty <= 0 && $qtyU <= 0 && $qtyP <= 0) {
                 continue;
             }
             if ($name === '') {
                 $name = '—';
             }
-            $product->variants()->create([
-                'name' => $name,
-                'quantity' => max(0, $qty),
-                'sort_order' => $sortOrder++,
-            ]);
+            $data = ['name' => $name, 'sort_order' => $sortOrder++];
+            if (Schema::hasColumn('product_variants', 'quantity_ursynow')) {
+                $data['quantity_ursynow'] = $qtyU;
+                $data['quantity_praga'] = $qtyP;
+                $data['quantity'] = $qtyU + $qtyP;
+            } else {
+                $data['quantity'] = $qty;
+            }
+            $product->variants()->create($data);
         }
 
         $message = 'Товар успішно оновлений';

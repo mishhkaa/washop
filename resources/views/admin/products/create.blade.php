@@ -53,21 +53,53 @@
                 <p class="mt-1 text-sm text-gray-500">Ціна, яка показується клієнту і за якою рахується дохід. Прибуток = ціна на сайті − ціна закупу.</p>
             </div>
 
-            <div class="form-group">
-                <label for="quantity">Кількість на складі (якщо без смаків)</label>
-                <input type="number" id="quantity" name="quantity" min="0" value="{{ old('quantity', 0) }}" placeholder="0">
+            <div class="form-group p-6 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50">
+                <h3 class="text-base font-semibold text-gray-900 mb-2">Наявність по районах (самовивіз)</h3>
+                <p class="text-sm text-gray-600 mb-4">Якщо без смаків — вкажіть кількість на Урсинові та Празі окремо. На сайті клієнт обирає спосіб доставки і район — показується наявність тільки для обраного району.</p>
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label for="quantity_ursynow" class="block text-sm font-medium text-gray-700 mb-1">Урсинув</label>
+                        <input type="number" id="quantity_ursynow" name="quantity_ursynow" min="0" value="{{ old('quantity_ursynow', 0) }}" class="w-full rounded-xl border border-gray-300 px-4 py-2">
+                    </div>
+                    <div>
+                        <label for="quantity_praga" class="block text-sm font-medium text-gray-700 mb-1">Прага</label>
+                        <input type="number" id="quantity_praga" name="quantity_praga" min="0" value="{{ old('quantity_praga', 0) }}" class="w-full rounded-xl border border-gray-300 px-4 py-2">
+                    </div>
+                    <div>
+                        <label for="quantity_total" class="block text-sm font-medium text-gray-700 mb-1">Разом (InPost)</label>
+                        <input type="number" id="quantity_total" min="0" value="{{ (int)old('quantity_ursynow', 0) + (int)old('quantity_praga', 0) }}" class="w-full rounded-xl border border-gray-200 px-4 py-2 bg-gray-100" readonly>
+                        <input type="hidden" name="quantity" id="quantity_hidden" value="{{ (int)old('quantity_ursynow', 0) + (int)old('quantity_praga', 0) }}">
+                    </div>
+                </div>
             </div>
 
             <div class="form-group p-6 rounded-2xl border-2 border-dashed border-amber-200 bg-amber-50/50">
                 <h3 class="text-base font-semibold text-gray-900 mb-2">Смаки / асортимент</h3>
-                <p class="text-sm text-gray-600 mb-4">Можна додати варіанти (смаки). На сайті клієнт обере смак при додаванні в кошик. Залишок — по кожному смаку.</p>
+                <p class="text-sm text-gray-600 mb-4">Можна додати варіанти (смаки). Для кожного смаку — наявність на Урсинові та Празі окремо.</p>
                 <div id="variants-list">
-                    @php $vars = old('variants', [['name'=>'','quantity'=>0]]); @endphp
+                    @php $vars = old('variants', [['name'=>'','quantity'=>0,'quantity_ursynow'=>0,'quantity_praga'=>0]]); @endphp
                     @foreach($vars as $idx => $v)
-                        <div class="flex flex-wrap items-center gap-2 mb-2 variant-row">
-                            <input type="text" name="variants[{{ $idx }}][name]" value="{{ $v['name'] ?? '' }}" placeholder="Смак" class="flex-1 min-w-[120px] px-3 py-2 border border-gray-300 rounded-lg">
-                            <input type="number" name="variants[{{ $idx }}][quantity]" value="{{ $v['quantity'] ?? 0 }}" min="0" placeholder="К-сть" class="w-24 px-3 py-2 border border-gray-300 rounded-lg">
-                            <button type="button" class="variant-remove px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm">Видалити</button>
+                        <div class="variant-row mb-4 p-3 bg-white rounded-lg border border-amber-100">
+                            <div class="flex flex-wrap items-center gap-2 mb-2">
+                                <input type="text" name="variants[{{ $idx }}][name]" value="{{ $v['name'] ?? '' }}" placeholder="Смак" class="flex-1 min-w-[120px] px-3 py-2 border border-gray-300 rounded-lg">
+                                <button type="button" class="variant-remove px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm">Видалити</button>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 text-sm">
+                                <div>
+                                    <label class="text-gray-500">Урсинув</label>
+                                    <input type="number" data-variant-qty-u name="variants[{{ $idx }}][quantity_ursynow]" value="{{ $v['quantity_ursynow'] ?? 0 }}" min="0" class="w-full px-2 py-1.5 border border-gray-300 rounded-lg">
+                                </div>
+                                <div>
+                                    <label class="text-gray-500">Прага</label>
+                                    <input type="number" data-variant-qty-p name="variants[{{ $idx }}][quantity_praga]" value="{{ $v['quantity_praga'] ?? 0 }}" min="0" class="w-full px-2 py-1.5 border border-gray-300 rounded-lg">
+                                </div>
+                                <div>
+                                    <label class="text-gray-500">Разом (InPost)</label>
+                                    @php $vt = (int)($v['quantity_ursynow'] ?? 0) + (int)($v['quantity_praga'] ?? 0); @endphp
+                                    <input type="number" data-variant-qty-t value="{{ $vt }}" min="0" class="w-full px-2 py-1.5 border border-gray-200 rounded-lg bg-gray-100" readonly>
+                                    <input type="hidden" data-variant-qty-hidden name="variants[{{ $idx }}][quantity]" value="{{ $vt }}">
+                                </div>
+                            </div>
                         </div>
                     @endforeach
                 </div>
@@ -124,19 +156,60 @@
     var addBtn = document.getElementById('variant-add');
     if (!list || !addBtn) return;
     var idx = list.querySelectorAll('.variant-row').length;
+
+    function toInt(v) { var n = parseInt(String(v || '0'), 10); return isNaN(n) ? 0 : n; }
+    function recalcProductTotal() {
+        var u = document.getElementById('quantity_ursynow');
+        var p = document.getElementById('quantity_praga');
+        var t = document.getElementById('quantity_total');
+        var h = document.getElementById('quantity_hidden');
+        if (!u || !p || !t || !h) return;
+        var total = toInt(u.value) + toInt(p.value);
+        t.value = total;
+        h.value = total;
+    }
+    function recalcVariantRow(row) {
+        if (!row) return;
+        var u = row.querySelector('[data-variant-qty-u]');
+        var p = row.querySelector('[data-variant-qty-p]');
+        var t = row.querySelector('[data-variant-qty-t]');
+        var h = row.querySelector('[data-variant-qty-hidden]');
+        if (!u || !p || !t || !h) return;
+        var total = toInt(u.value) + toInt(p.value);
+        t.value = total;
+        h.value = total;
+    }
+    function attachVariantListeners(row) {
+        if (!row) return;
+        row.querySelectorAll('[data-variant-qty-u],[data-variant-qty-p]').forEach(function(inp) {
+            inp.addEventListener('input', function() { recalcVariantRow(row); });
+        });
+    }
+
+    document.getElementById('quantity_ursynow')?.addEventListener('input', recalcProductTotal);
+    document.getElementById('quantity_praga')?.addEventListener('input', recalcProductTotal);
+    recalcProductTotal();
     addBtn.addEventListener('click', function() {
         var row = document.createElement('div');
-        row.className = 'flex flex-wrap items-center gap-2 mb-2 variant-row';
-        row.innerHTML = '<input type="text" name="variants[' + idx + '][name]" value="" placeholder="Смак" class="flex-1 min-w-[120px] px-3 py-2 border border-gray-300 rounded-lg">' +
-            '<input type="number" name="variants[' + idx + '][quantity]" value="0" min="0" placeholder="К-сть" class="w-24 px-3 py-2 border border-gray-300 rounded-lg">' +
-            '<button type="button" class="variant-remove px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm">Видалити</button>';
+        row.className = 'variant-row mb-4 p-3 bg-white rounded-lg border border-amber-100';
+        row.innerHTML = '<div class="flex flex-wrap items-center gap-2 mb-2">' +
+            '<input type="text" name="variants[' + idx + '][name]" value="" placeholder="Смак" class="flex-1 min-w-[120px] px-3 py-2 border border-gray-300 rounded-lg">' +
+            '<button type="button" class="variant-remove px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm">Видалити</button>' +
+            '</div><div class="grid grid-cols-3 gap-2 text-sm">' +
+            '<div><label class="text-gray-500">Урсинув</label><input type="number" data-variant-qty-u name="variants[' + idx + '][quantity_ursynow]" value="0" min="0" class="w-full px-2 py-1.5 border border-gray-300 rounded-lg"></div>' +
+            '<div><label class="text-gray-500">Прага</label><input type="number" data-variant-qty-p name="variants[' + idx + '][quantity_praga]" value="0" min="0" class="w-full px-2 py-1.5 border border-gray-300 rounded-lg"></div>' +
+            '<div><label class="text-gray-500">Разом (InPost)</label><input type="number" data-variant-qty-t value="0" min="0" class="w-full px-2 py-1.5 border border-gray-200 rounded-lg bg-gray-100" readonly><input type="hidden" data-variant-qty-hidden name="variants[' + idx + '][quantity]" value="0"></div></div>';
         list.appendChild(row);
         idx++;
+        attachVariantListeners(row);
+        recalcVariantRow(row);
         row.querySelector('.variant-remove').addEventListener('click', function() { row.remove(); });
     });
     list.querySelectorAll('.variant-remove').forEach(function(btn) {
         btn.addEventListener('click', function() { btn.closest('.variant-row').remove(); });
     });
+
+    list.querySelectorAll('.variant-row').forEach(function(r) { attachVariantListeners(r); recalcVariantRow(r); });
 })();
 </script>
 @endpush

@@ -11,6 +11,7 @@ use App\Models\ShopCategory;
 use App\Models\User;
 use App\Services\TelegramOrderNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -37,11 +38,47 @@ class ShopController extends Controller
 
     public function index(Request $request)
     {
+        // Підтягнути вибір з cookie, якщо сесія пуста (наприклад, новий браузер/вкладка)
+        if (!$request->session()->has('shop_delivery_method') && $request->cookie('shop_delivery_method')) {
+            $cm = (string) $request->cookie('shop_delivery_method');
+            $cd = $request->cookie('shop_delivery_district');
+            if (in_array($cm, ['paczkomat', 'osobisty'], true)) {
+                $request->session()->put('shop_delivery_method', $cm);
+                $request->session()->put('shop_delivery_district', $cm === 'osobisty' ? ($cd ?: null) : null);
+            }
+        }
+
+        if ($request->has('delivery_method') || $request->has('district')) {
+            $dm = $request->get('delivery_method');
+            $districtInput = $request->get('district');
+            if (in_array($dm, ['paczkomat', 'osobisty'], true)) {
+                $request->session()->put('shop_delivery_method', $dm);
+            }
+            // district може бути порожнім (для paczkomat) або Ursynów/Praga (для osobisty)
+            $request->session()->put('shop_delivery_district', $districtInput ?: null);
+
+            // Записуємо також у cookie (30 днів)
+            if (in_array($dm, ['paczkomat', 'osobisty'], true)) {
+                Cookie::queue('shop_delivery_method', $dm, 60 * 24 * 30);
+                Cookie::queue('shop_delivery_district', $dm === 'osobisty' ? ((string) ($districtInput ?: '')) : '', 60 * 24 * 30);
+            }
+        }
+
+        $showDeliveryChoiceModal = !$request->session()->has('shop_delivery_method')
+            || (session('shop_delivery_method') === 'osobisty' && !$request->session()->has('shop_delivery_district'));
+        $deliveryMethod = session('shop_delivery_method');
+        $district = session('shop_delivery_district');
+
+        $categories = ShopCategory::orderBy('sort_order')->orderBy('name')->get();
+
+        if ($showDeliveryChoiceModal) {
+            $products = collect();
+            return view('shop.index', compact('products', 'categories', 'deliveryMethod', 'district', 'showDeliveryChoiceModal'));
+        }
+
+        $districtForStock = ($deliveryMethod === 'osobisty') ? $district : null;
         $query = Product::where('available_in_bot', true)
-            ->where(function ($q) {
-                $q->where('quantity', '>', 0)
-                    ->orWhereHas('variants', fn ($v) => $v->where('quantity', '>', 0));
-            })
+            ->availableInDistrict($districtForStock)
             ->with('variants');
 
         if ($request->filled('category')) {
@@ -79,9 +116,7 @@ class ShopController extends Controller
 
         $products = $query->get();
 
-        $categories = ShopCategory::orderBy('sort_order')->orderBy('name')->get();
-
-        return view('shop.index', compact('products', 'categories'));
+        return view('shop.index', compact('products', 'categories', 'deliveryMethod', 'district', 'showDeliveryChoiceModal'));
     }
 
     public function addToCart(Request $request)
@@ -94,18 +129,28 @@ class ShopController extends Controller
         $productId = (int) $request->product_id;
         $variantId = $request->has('variant_id') ? (int) $request->variant_id : 0;
         $qty = (int) ($request->quantity ?? 1);
+        $district = session('shop_delivery_district'); // для paczkomat може бути null (показуємо суму двох районів)
         $product = Product::where('id', $productId)->where('available_in_bot', true)->with('variants')->firstOrFail();
 
         if ($product->hasVariants()) {
             if ($variantId <= 0) {
                 return back()->with('error', __('Choose flavor'));
             }
-            $variant = $product->variants()->where('id', $variantId)->where('quantity', '>=', $qty)->firstOrFail();
+            $availableVariants = $product->getAvailableVariantsForDistrict($district);
+            $variant = $availableVariants->firstWhere('id', $variantId);
+            if (!$variant) {
+                return back()->with('error', __('Insufficient product'));
+            }
+            $variantQty = $product->getVariantQuantityForDistrict($variantId, $district);
+            if ($variantQty < $qty) {
+                return back()->with('error', __('Insufficient product'));
+            }
         } else {
             if ($variantId !== 0) {
                 return back()->with('error', __('Error'));
             }
-            if (($product->quantity ?? 0) < $qty) {
+            $availableQty = $product->getQuantityForDistrict($district);
+            if ($availableQty < $qty) {
                 return back()->with('error', __('Insufficient product'));
             }
         }
@@ -214,7 +259,10 @@ class ShopController extends Controller
         if ($tid || $tun) {
             $client = Client::findOrCreateByTelegram($tid, $tun);
         }
-        return view('shop.checkout', compact('items', 'client', 'orderTotal'));
+        $deliveryMethodFromSession = session('shop_delivery_method', 'paczkomat');
+        $deliveryMethodForm = $deliveryMethodFromSession === 'osobisty' ? 'osobisty_odbior' : 'paczkomat';
+        $districtFromSession = session('shop_delivery_district');
+        return view('shop.checkout', compact('items', 'client', 'orderTotal', 'deliveryMethodForm', 'districtFromSession'));
     }
 
     public function checkout(Request $request)
@@ -238,15 +286,15 @@ class ShopController extends Controller
             $rules['delivery_pickup_name'] = 'required|string|max:255';
             $rules['delivery_pickup_phone'] = 'required|string|max:64';
             $rules['delivery_pickup_district'] = 'required|in:Ursynów,Praga';
-            $rules['delivery_pickup_day'] = 'required|string|max:255';
             $messages['delivery_pickup_name.required'] = __('Required for pickup');
             $messages['delivery_pickup_phone.required'] = __('Required for pickup');
             $messages['delivery_pickup_district.required'] = __('Required for pickup');
             $messages['delivery_pickup_district.in'] = __('Choose Ursynów or Praga');
-            $messages['delivery_pickup_day.required'] = __('Required for pickup');
         }
         $rules['use_cashback'] = 'nullable|numeric|min:0';
         $request->validate($rules, $messages);
+
+        $districtFromSession = session('shop_delivery_district'); // для paczkomat може бути null
         $cart = $this->normalizeCart($request->session()->get('shop_cart', []));
         if (empty($cart)) {
             return redirect()->route('shop.home')->with('message', __('Cart is empty'));
@@ -263,12 +311,13 @@ class ShopController extends Controller
             }
             $product = $products[$productId];
             $variant = $variantId > 0 ? $product->variants->firstWhere('id', $variantId) : null;
+            $districtForStock = ($request->input('delivery_method') === 'osobisty_odbior') ? (string) $request->input('delivery_pickup_district') : null;
             if ($product->hasVariants()) {
-                if (!$variant || ($variant->quantity ?? 0) < $qty) {
+                if (!$variant || $product->getVariantQuantityForDistrict($variantId, $districtForStock) < $qty) {
                     return back()->with('error', __('Insufficient product'));
                 }
             } else {
-                if (($product->quantity ?? 0) < $qty) {
+                if ($product->getQuantityForDistrict($districtForStock) < $qty) {
                     return back()->with('error', __('Insufficient product'));
                 }
             }
@@ -350,9 +399,10 @@ class ShopController extends Controller
                     $isPickup = $request->input('delivery_method') === 'osobisty_odbior';
                     $saleData['delivery_pickup_name'] = ($isPaczkomat || $isPickup) ? trim((string) $request->input('delivery_pickup_name')) : null;
                     $saleData['delivery_pickup_phone'] = ($isPaczkomat || $isPickup) ? trim((string) $request->input('delivery_pickup_phone')) : null;
+                    // Район потрібен лише для самовивозу
                     $saleData['delivery_pickup_district'] = $isPickup ? trim((string) $request->input('delivery_pickup_district')) : null;
                     if (Schema::hasColumn('sales', 'delivery_pickup_day')) {
-                        $saleData['delivery_pickup_day'] = $isPickup ? trim((string) $request->input('delivery_pickup_day')) : null;
+                        $saleData['delivery_pickup_day'] = null;
                     }
                 }
                 $sale = Sale::create($saleData);

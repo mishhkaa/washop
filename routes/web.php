@@ -21,7 +21,7 @@ use App\Http\Controllers\ShopController;
 
 // ========== МАГАЗИН (головний сайт) — корінь ==========
 Route::get('/locale/{locale}', function (string $locale) {
-    if (in_array($locale, ['uk', 'pl', 'en'], true)) {
+    if (in_array($locale, ['pl', 'uk', 'en'], true)) {
         session(['locale' => $locale]);
     }
     return redirect()->back();
@@ -75,7 +75,6 @@ Route::prefix('crm')->group(function () {
             Route::delete('managers/{manager}/payments/{payment}', [PaymentController::class, 'destroy'])->name('managers.payments.destroy');
             Route::resource('managers', ManagerController::class)->except(['show']);
             Route::resource('sales', SaleController::class);
-            Route::post('sales/{sale}/assign-manager', [SaleController::class, 'assignManager'])->name('sales.assign-manager');
             Route::post('sales/{sale}/status', [SaleController::class, 'updateStatus'])->name('sales.update-status');
             Route::resource('clients', ClientController::class)->only(['index', 'show', 'update']);
             Route::get('shop', [BotController::class, 'index'])->name('bot.index'); // Магазин / ТГ-бот (головна розділу)

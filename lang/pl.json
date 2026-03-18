@@ -17,6 +17,8 @@
     "About us": "O nas",
     "About us text": "CloudCity — wygodny wybór produktów. Wybierz kategorię, dodaj do koszyka i złóż zamówienie.",
     "Delivery": "Dostawa",
+    "Delivery method": "Sposób dostawy",
+    "Pickup": "Odbiór osobisty",
     "Delivery text": "Warunki dostawy i płatności — u menedżera.",
     "Contact": "Kontakt",
     "Write to manager": "Napisz do menedżera",
@@ -73,5 +75,6 @@
     "Max to use": "Maks. do użycia",
     "+ liquid as gift": "+ płyn w prezencie",
     "Choose flavor": "Wybierz smak",
-    "Flavor": "Smak"
+    "Flavor": "Smak",
+    "Back": "Wstecz"
 }

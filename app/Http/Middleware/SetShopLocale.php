@@ -9,11 +9,12 @@ use Symfony\Component\HttpFoundation\Response;
 
 class SetShopLocale
 {
-    protected array $locales = ['uk', 'pl', 'en'];
+    /** Польська — основна мова; порядок: pl, uk, en */
+    protected array $locales = ['pl', 'uk', 'en'];
 
     public function handle(Request $request, Closure $next): Response
     {
-        $locale = session('locale', config('app.locale'));
+        $locale = session('locale', 'pl');
         if (in_array($locale, $this->locales, true)) {
             App::setLocale($locale);
         }

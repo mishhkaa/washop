@@ -17,6 +17,8 @@
     "About us": "About us",
     "About us text": "CloudCity — convenient product choice. Choose a category, add to cart and place your order.",
     "Delivery": "Delivery",
+    "Delivery method": "Delivery method",
+    "Pickup": "Pickup",
     "Delivery text": "Delivery and payment terms — ask the manager.",
     "Contact": "Contact",
     "Write to manager": "Write to manager",
@@ -73,5 +75,6 @@
     "Max to use": "Max to use",
     "+ liquid as gift": "+ liquid as gift",
     "Choose flavor": "Choose flavor",
-    "Flavor": "Flavor"
+    "Flavor": "Flavor",
+    "Back": "Back"
 }

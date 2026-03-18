@@ -9,9 +9,40 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class SaleController extends Controller
 {
+    /** Район для списання залишків: для самовивозу — район клієнта, для Paczkomat — Урсинув. */
+    private function getDeductionDistrict(Sale $sale): ?string
+    {
+        if (!Schema::hasColumn('sales', 'delivery_method')) {
+            return null;
+        }
+        if (($sale->delivery_method ?? '') === 'osobisty_odbior' && $sale->delivery_pickup_district) {
+            return $sale->delivery_pickup_district;
+        }
+        if (($sale->delivery_method ?? '') === 'paczkomat') {
+            return Product::DISTRICT_URSYNOW;
+        }
+        return null;
+    }
+
+    /** Назва колонки кількості для району (quantity_ursynow / quantity_praga) або null для quantity. */
+    private function quantityColumnForDistrict(?string $district): ?string
+    {
+        if (!$district || !Schema::hasColumn('products', 'quantity_ursynow')) {
+            return null;
+        }
+        if ($district === Product::DISTRICT_URSYNOW) {
+            return 'quantity_ursynow';
+        }
+        if ($district === Product::DISTRICT_PRAGA) {
+            return 'quantity_praga';
+        }
+        return null;
+    }
+
     public function index(Request $request)
     {
         $query = Sale::with(['product', 'manager', 'saleItems.product']);
@@ -196,15 +227,7 @@ class SaleController extends Controller
     public function show(Sale $sale)
     {
         $sale->load(['saleItems.product', 'manager', 'client']);
-        $managers = \App\Models\User::where('role', 'manager')->orderBy('name')->get();
-        return view('admin.sales.show', compact('sale', 'managers'));
-    }
-
-    public function assignManager(Request $request, Sale $sale)
-    {
-        $request->validate(['manager_id' => 'nullable|exists:users,id']);
-        $sale->update(['manager_id' => $request->manager_id ?: null]);
-        return back()->with('success', 'Менеджера прив\'язано до замовлення.');
+        return view('admin.sales.show', compact('sale'));
     }
 
     /**
@@ -222,7 +245,8 @@ class SaleController extends Controller
         }
 
         if ($newStatus === 'accepted' && $previousStatus !== 'accepted') {
-            DB::transaction(function () use ($sale) {
+            $district = $this->getDeductionDistrict($sale);
+            DB::transaction(function () use ($sale, $district) {
                 $sale->load('saleItems.product');
                 foreach ($sale->saleItems as $item) {
                     $product = Product::lockForUpdate()->find($item->product_id);
@@ -230,22 +254,40 @@ class SaleController extends Controller
                         continue;
                     }
                     $qty = (int) $item->quantity;
+                    $col = $this->quantityColumnForDistrict($district);
                     if ($item->product_variant_id) {
-                        ProductVariant::where('id', $item->product_variant_id)
-                            ->where('product_id', $product->id)
-                            ->decrement('quantity', $qty);
+                        if ($col) {
+                            ProductVariant::where('id', $item->product_variant_id)
+                                ->where('product_id', $product->id)
+                                ->decrement($col, $qty);
+                            ProductVariant::where('id', $item->product_variant_id)
+                                ->where('product_id', $product->id)
+                                ->decrement('quantity', $qty);
+                        } else {
+                            ProductVariant::where('id', $item->product_variant_id)
+                                ->where('product_id', $product->id)
+                                ->decrement('quantity', $qty);
+                        }
                     } else {
-                        $product->decrement('quantity', $qty);
+                        if ($col) {
+                            $product->decrement($col, $qty);
+                            $product->decrement('quantity', $qty);
+                        } else {
+                            $product->decrement('quantity', $qty);
+                        }
                     }
                 }
-                $sale->update(['status' => 'accepted']);
+                $sale->update([
+                    'status' => 'accepted',
+                    'manager_id' => auth()->id(),
+                ]);
             });
             return back()->with('success', 'Замовлення прийнято. Залишки списано зі складу.');
         }
 
         if ($newStatus === 'cancelled' && $previousStatus === 'accepted') {
-            // Повернути залишки при скасуванні вже прийнятого замовлення
-            DB::transaction(function () use ($sale) {
+            $district = $this->getDeductionDistrict($sale);
+            DB::transaction(function () use ($sale, $district) {
                 $sale->load('saleItems.product');
                 foreach ($sale->saleItems as $item) {
                     $product = Product::lockForUpdate()->find($item->product_id);
@@ -253,12 +295,27 @@ class SaleController extends Controller
                         continue;
                     }
                     $qty = (int) $item->quantity;
+                    $col = $this->quantityColumnForDistrict($district);
                     if ($item->product_variant_id) {
-                        ProductVariant::where('id', $item->product_variant_id)
-                            ->where('product_id', $product->id)
-                            ->increment('quantity', $qty);
+                        if ($col) {
+                            ProductVariant::where('id', $item->product_variant_id)
+                                ->where('product_id', $product->id)
+                                ->increment($col, $qty);
+                            ProductVariant::where('id', $item->product_variant_id)
+                                ->where('product_id', $product->id)
+                                ->increment('quantity', $qty);
+                        } else {
+                            ProductVariant::where('id', $item->product_variant_id)
+                                ->where('product_id', $product->id)
+                                ->increment('quantity', $qty);
+                        }
                     } else {
-                        $product->increment('quantity', $qty);
+                        if ($col) {
+                            $product->increment($col, $qty);
+                            $product->increment('quantity', $qty);
+                        } else {
+                            $product->increment('quantity', $qty);
+                        }
                     }
                 }
                 $sale->update(['status' => 'cancelled']);
@@ -279,16 +336,33 @@ class SaleController extends Controller
 
                 // Повертаємо залишки тільки якщо замовлення було в статусі «Прийнято» (залишки вже списані)
                 if ($wasAccepted) {
+                    $district = $this->getDeductionDistrict($sale);
+                    $col = $this->quantityColumnForDistrict($district);
                     if ($sale->is_combined) {
                         foreach ($sale->saleItems as $item) {
                             $product = Product::lockForUpdate()->find($item->product_id);
                             if ($product) {
+                                $qty = (int) $item->quantity;
                                 if ($item->product_variant_id) {
-                                    ProductVariant::where('id', $item->product_variant_id)
-                                        ->where('product_id', $product->id)
-                                        ->increment('quantity', $item->quantity);
+                                    if ($col) {
+                                        ProductVariant::where('id', $item->product_variant_id)
+                                            ->where('product_id', $product->id)
+                                            ->increment($col, $qty);
+                                        ProductVariant::where('id', $item->product_variant_id)
+                                            ->where('product_id', $product->id)
+                                            ->increment('quantity', $qty);
+                                    } else {
+                                        ProductVariant::where('id', $item->product_variant_id)
+                                            ->where('product_id', $product->id)
+                                            ->increment('quantity', $qty);
+                                    }
                                 } else {
-                                    $product->increment('quantity', $item->quantity);
+                                    if ($col) {
+                                        $product->increment($col, $qty);
+                                        $product->increment('quantity', $qty);
+                                    } else {
+                                        $product->increment('quantity', $qty);
+                                    }
                                 }
                             }
                         }
@@ -296,7 +370,12 @@ class SaleController extends Controller
                         if ($sale->product_id) {
                             $product = Product::lockForUpdate()->find($sale->product_id);
                             if ($product) {
-                                $product->increment('quantity', $sale->quantity);
+                                $qty = (int) $sale->quantity;
+                                if ($col) {
+                                    $product->increment($col, $qty);
+                                } else {
+                                    $product->increment('quantity', $qty);
+                                }
                             }
                         }
                     }

@@ -47,23 +47,32 @@
         @endif
 
         <section class="checkout-section">
-            <h3 class="checkout-section-title">{{ __('Choose delivery method') }}</h3>
-            @if($errors->has('delivery_method'))
-            <p class="checkout-error">{{ $errors->first('delivery_method') }}</p>
-            @endif
-            <div class="delivery-options">
-                <label class="delivery-option">
-                    <input type="radio" name="delivery_method" value="paczkomat" id="delivery_paczkomat" {{ old('delivery_method', 'paczkomat') === 'paczkomat' ? 'checked' : '' }}>
-                    <span class="delivery-option-label">{{ __('Paczkomat InPost') }}</span>
-                    <span class="delivery-option-note">{{ __('Payment on delivery') }}</span>
-                </label>
-                <label class="delivery-option">
-                    <input type="radio" name="delivery_method" value="osobisty_odbior" id="delivery_osobisty" {{ old('delivery_method') === 'osobisty_odbior' ? 'checked' : '' }}>
-                    <span class="delivery-option-label">{{ __('Personal pickup') }}</span>
-                    <span class="delivery-option-note">{{ __('Pickup at point') }}</span>
-                </label>
-            </div>
+            @php
+                $method = old('delivery_method', $deliveryMethodForm ?? 'paczkomat');
+                $isPaczkomat = $method === 'paczkomat';
+                $isPickup = $method === 'osobisty_odbior';
+                $districtValue = old('delivery_pickup_district', $districtFromSession ?? '');
+            @endphp
 
+            <input type="hidden" name="delivery_method" value="{{ $method }}">
+            @if($isPickup)
+                <input type="hidden" name="delivery_pickup_district" value="{{ $districtValue }}">
+            @endif
+
+            <h3 class="checkout-section-title">{{ __('Delivery method') }}</h3>
+            <p class="checkout-item" style="margin-top: 0;">
+                @if($isPaczkomat)
+                    <strong>{{ __('Paczkomat InPost') }}</strong>
+                @else
+                    <strong>{{ __('Personal pickup') }}</strong> · {{ $districtValue ?: '—' }}
+                @endif
+            </p>
+
+            @if($errors->has('delivery_method'))
+                <p class="checkout-error">{{ $errors->first('delivery_method') }}</p>
+            @endif
+
+            @if($isPaczkomat)
             <div id="paczkomat-fields" class="checkout-delivery-fields">
                 <label class="checkout-label" for="delivery_paczkomat_name">{{ __('Your name') }}</label>
                 <input type="text" name="delivery_pickup_name" id="delivery_paczkomat_name" class="checkout-input" value="{{ old('delivery_pickup_name') }}" maxlength="255" placeholder="{{ __('Your name') }}">
@@ -82,8 +91,10 @@
                 <p class="checkout-error">{{ $errors->first('delivery_paczkomat_code') }}</p>
                 @endif
             </div>
+            @endif
 
-            <div id="pickup-fields" class="checkout-delivery-fields" style="display: none;">
+            @if($isPickup)
+            <div id="pickup-fields" class="checkout-delivery-fields">
                 <label class="checkout-label" for="delivery_pickup_name">{{ __('Your name') }}</label>
                 <input type="text" name="delivery_pickup_name" id="delivery_pickup_name" class="checkout-input" value="{{ old('delivery_pickup_name') }}" maxlength="255">
                 @if($errors->has('delivery_pickup_name'))
@@ -94,26 +105,13 @@
                 @if($errors->has('delivery_pickup_phone'))
                 <p class="checkout-error">{{ $errors->first('delivery_pickup_phone') }}</p>
                 @endif
-                <label class="checkout-label" for="delivery_pickup_district">{{ __('District / area') }}</label>
-                @php
-                    $districtOptions = ['Ursynów', 'Praga'];
-                    $districtValue = old('delivery_pickup_district');
-                @endphp
-                <select name="delivery_pickup_district" id="delivery_pickup_district" class="checkout-input">
-                    <option value="">— {{ __('Choose district') }} —</option>
-                    @foreach($districtOptions as $opt)
-                    <option value="{{ $opt }}" {{ $districtValue === $opt ? 'selected' : '' }}>{{ $opt }}</option>
-                    @endforeach
-                </select>
+                <label class="checkout-label">{{ __('District / area') }}</label>
+                <div class="checkout-input" style="display:flex; align-items:center; min-height: 48px;">{{ $districtValue ?: '—' }}</div>
                 @if($errors->has('delivery_pickup_district'))
                 <p class="checkout-error">{{ $errors->first('delivery_pickup_district') }}</p>
                 @endif
-                <label class="checkout-label" for="delivery_pickup_day">{{ __('Preferred pickup day') }}</label>
-                <input type="text" name="delivery_pickup_day" id="delivery_pickup_day" class="checkout-input" value="{{ old('delivery_pickup_day') }}" maxlength="255" placeholder="{{ __('Preferred pickup day placeholder') }}">
-                @if($errors->has('delivery_pickup_day'))
-                <p class="checkout-error">{{ $errors->first('delivery_pickup_day') }}</p>
-                @endif
             </div>
+            @endif
         </section>
 
         <div class="checkout-actions">
@@ -138,27 +136,6 @@
         Telegram.WebApp.expand();
     }
 
-    function toggleDeliveryFields() {
-        var method = document.querySelector('input[name="delivery_method"]:checked');
-        var paczkomatBlock = document.getElementById('paczkomat-fields');
-        var pickupBlock = document.getElementById('pickup-fields');
-        if (!method || !paczkomatBlock || !pickupBlock) return;
-        if (method.value === 'paczkomat') {
-            paczkomatBlock.style.display = 'block';
-            pickupBlock.style.display = 'none';
-            paczkomatBlock.querySelectorAll('input').forEach(function(i) { i.disabled = false; });
-            pickupBlock.querySelectorAll('input, select').forEach(function(i) { i.disabled = true; });
-        } else {
-            paczkomatBlock.style.display = 'none';
-            pickupBlock.style.display = 'block';
-            paczkomatBlock.querySelectorAll('input').forEach(function(i) { i.disabled = true; });
-            pickupBlock.querySelectorAll('input, select').forEach(function(i) { i.disabled = false; });
-        }
-    }
-    document.querySelectorAll('input[name="delivery_method"]').forEach(function(radio) {
-        radio.addEventListener('change', toggleDeliveryFields);
-    });
-    toggleDeliveryFields();
 })();
 </script>
 @endpush

@@ -279,31 +279,17 @@
             </section>
             @endif
 
-            {{-- Менеджер --}}
+            {{-- Хто прийняв замовлення (менеджер рахується в аналітиці) --}}
             <section class="crm-panel">
                 <div class="crm-panel__header">
                     <h2 class="crm-panel__title">Менеджер</h2>
                 </div>
                 <div class="crm-panel__body">
-                    <form action="{{ route('admin.sales.assign-manager', $sale) }}" method="POST" class="space-y-5">
-                        @csrf
-                        <div>
-                            <label for="manager_id" class="block text-sm font-medium text-gray-700 mb-2">Призначити менеджера</label>
-                            <select name="manager_id" id="manager_id" class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition">
-                                <option value="">— Не призначено —</option>
-                                @foreach($managers as $m)
-                                    <option value="{{ $m->id }}" {{ (int) $sale->manager_id === (int) $m->id ? 'selected' : '' }}>{{ $m->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <button type="submit" class="w-full sm:w-auto px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition shadow-sm">
-                            Зберегти
-                        </button>
-                    </form>
                     @if($sale->manager)
-                        <p class="mt-6 pt-5 border-t border-gray-100 text-sm text-gray-600">
-                            Поточний: <span class="font-medium text-gray-900">{{ $sale->manager->name }}</span>
-                        </p>
+                        <p class="text-gray-900 font-medium">{{ $sale->manager->name }}</p>
+                        <p class="text-sm text-gray-500 mt-1">Прийняв замовлення — рахується в аналітиці</p>
+                    @else
+                        <p class="text-gray-500">Ще ніхто не прийняв замовлення</p>
                     @endif
                 </div>
             </section>

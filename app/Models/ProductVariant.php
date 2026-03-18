@@ -10,6 +10,8 @@ class ProductVariant extends Model
         'product_id',
         'name',
         'quantity',
+        'quantity_ursynow',
+        'quantity_praga',
         'sort_order',
     ];
 
