@@ -271,10 +271,12 @@ class ShopController extends Controller
             $rules['delivery_pickup_name'] = 'required|string|max:255';
             $rules['delivery_pickup_phone'] = 'required|string|max:64';
             $rules['delivery_pickup_district'] = 'required|in:Ursynów,Praga';
+            $rules['delivery_pickup_day'] = 'required|string|max:255';
             $messages['delivery_pickup_name.required'] = __('Required for pickup');
             $messages['delivery_pickup_phone.required'] = __('Required for pickup');
             $messages['delivery_pickup_district.required'] = __('Required for pickup');
             $messages['delivery_pickup_district.in'] = __('Choose Ursynów or Praga');
+            $messages['delivery_pickup_day.required'] = __('Required for pickup');
         }
         $rules['use_cashback'] = 'nullable|numeric|min:0';
         $request->validate($rules, $messages);
@@ -387,7 +389,7 @@ class ShopController extends Controller
                     // Район потрібен лише для самовивозу
                     $saleData['delivery_pickup_district'] = $isPickup ? trim((string) $request->input('delivery_pickup_district')) : null;
                     if (Schema::hasColumn('sales', 'delivery_pickup_day')) {
-                        $saleData['delivery_pickup_day'] = null;
+                        $saleData['delivery_pickup_day'] = $isPickup ? trim((string) $request->input('delivery_pickup_day')) : null;
                     }
                 }
                 $sale = Sale::create($saleData);

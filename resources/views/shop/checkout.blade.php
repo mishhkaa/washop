@@ -130,6 +130,12 @@
                 @if($errors->has('delivery_pickup_district'))
                 <p class="checkout-error">{{ $errors->first('delivery_pickup_district') }}</p>
                 @endif
+
+                <label class="checkout-label" for="delivery_pickup_day">{{ __('Preferred pickup day') }}</label>
+                <input type="text" name="delivery_pickup_day" id="delivery_pickup_day" class="checkout-input" value="{{ old('delivery_pickup_day') }}" maxlength="255" placeholder="{{ __('Preferred pickup day placeholder') }}">
+                @if($errors->has('delivery_pickup_day'))
+                <p class="checkout-error">{{ $errors->first('delivery_pickup_day') }}</p>
+                @endif
             </div>
 
             @if(!empty($unavailable))
