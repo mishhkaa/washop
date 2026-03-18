@@ -204,6 +204,27 @@ class ShopController extends Controller
         return redirect()->back()->with('open_cart', true);
     }
 
+    public function setCartDelivery(Request $request)
+    {
+        $request->validate([
+            'delivery_method' => 'required|in:paczkomat,osobisty',
+            'district' => 'nullable|string|max:32',
+        ]);
+        $dm = (string) $request->input('delivery_method');
+        $district = $dm === 'osobisty' ? (string) ($request->input('district') ?? '') : '';
+        if ($dm === 'osobisty' && !in_array($district, [Product::DISTRICT_URSYNOW, Product::DISTRICT_PRAGA], true)) {
+            return redirect()->back()->with('error', __('Choose district'))->with('open_cart', true);
+        }
+
+        $request->session()->put('shop_delivery_method', $dm);
+        $request->session()->put('shop_delivery_district', $dm === 'osobisty' ? $district : null);
+
+        Cookie::queue('shop_delivery_method', $dm, 60 * 24 * 30);
+        Cookie::queue('shop_delivery_district', $dm === 'osobisty' ? $district : '', 60 * 24 * 30);
+
+        return redirect()->back()->with('open_cart', true);
+    }
+
     public function setTelegramSession(Request $request)
     {
         $request->validate([

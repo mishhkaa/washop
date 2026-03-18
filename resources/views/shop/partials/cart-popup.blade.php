@@ -1,8 +1,22 @@
 @php
     $items = $cartItems ?? [];
     $total = 0;
+    $deliveryMethod = session('shop_delivery_method', 'paczkomat');
+    $district = session('shop_delivery_district');
+    $districtForStock = ($deliveryMethod === 'osobisty') ? $district : null;
+    $districtOptions = [\App\Models\Product::DISTRICT_URSYNOW, \App\Models\Product::DISTRICT_PRAGA];
+    $unavailable = [];
     foreach ($items as $item) {
         $total += ($item->product->website_price ?? 0) * $item->quantity;
+        $availableQty = 0;
+        if ($item->variant && $item->variant->id) {
+            $availableQty = $item->product->getVariantQuantityForDistrict((int) $item->variant->id, $districtForStock);
+        } else {
+            $availableQty = $item->product->getQuantityForDistrict($districtForStock);
+        }
+        if ($availableQty < (int) $item->quantity) {
+            $unavailable[$item->cart_key] = $availableQty;
+        }
     }
 @endphp
 <div class="cart-modal-body">
@@ -16,6 +30,33 @@
             <a href="{{ route('shop.home') }}" class="btn-empty-cart">{{ __('Go to catalog') }}</a>
         </div>
     @else
+        <div style="margin-bottom: 12px; padding: 12px; border-radius: 12px; border: 1px solid rgba(148,163,184,0.25); background: rgba(15,23,42,0.45);">
+            <form action="{{ route('shop.cart.delivery') }}" method="POST" style="display:flex; gap:10px; flex-wrap:wrap; align-items:end;">
+                @csrf
+                <div style="flex:1; min-width: 180px;">
+                    <label style="display:block; font-size: 12px; color: #94a3b8; margin-bottom: 6px;">{{ __('Delivery method') }}</label>
+                    <select name="delivery_method" id="cart_delivery_method" class="checkout-input" style="padding: 10px 12px;">
+                        <option value="paczkomat" {{ $deliveryMethod === 'paczkomat' ? 'selected' : '' }}>{{ __('Paczkomat InPost') }}</option>
+                        <option value="osobisty" {{ $deliveryMethod === 'osobisty' ? 'selected' : '' }}>{{ __('Personal pickup') }}</option>
+                    </select>
+                </div>
+                <div style="flex:1; min-width: 180px; {{ $deliveryMethod === 'osobisty' ? '' : 'display:none;' }}" id="cart_district_wrap">
+                    <label style="display:block; font-size: 12px; color: #94a3b8; margin-bottom: 6px;">{{ __('District / area') }}</label>
+                    <select name="district" class="checkout-input" style="padding: 10px 12px;">
+                        <option value="">— {{ __('Choose district') }} —</option>
+                        @foreach($districtOptions as $opt)
+                            <option value="{{ $opt }}" {{ ($district ?? '') === $opt ? 'selected' : '' }}>{{ $opt }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <button type="submit" class="btn-add" style="padding: 10px 16px;">OK</button>
+            </form>
+            @if(!empty($unavailable))
+                <p style="margin: 10px 0 0 0; color: #fca5a5; font-size: 12px;">
+                    {{ __('Insufficient product') }}
+                </p>
+            @endif
+        </div>
         <ul class="cart-popup-list">
             @foreach($items as $item)
                 <li class="cart-popup-item">
@@ -25,6 +66,11 @@
                     <div class="cart-popup-info">
                         <span class="cart-popup-name">{{ $item->product->display_name }}@if($item->variant_name) · {{ $item->variant_name }}@endif</span>
                         <span class="cart-popup-meta">{{ number_format($item->product->website_price ?? 0, 0) }} zł</span>
+                        @if(array_key_exists($item->cart_key, $unavailable))
+                            <span style="margin-top: 4px; display:block; font-size: 12px; color: #fca5a5;">
+                                Немає в обраному районі/режимі. Доступно: {{ (int) $unavailable[$item->cart_key] }}.
+                            </span>
+                        @endif
                     </div>
                     <div class="cart-popup-qty-wrap">
                         <form action="{{ route('shop.cart.update') }}" method="POST" class="cart-popup-qty-form">
@@ -56,7 +102,22 @@
         </ul>
         <div class="cart-popup-footer">
             <p class="cart-popup-total-label">{{ __('Total') }}: <strong>{{ number_format($total, 0) }} zł</strong></p>
-            <a href="{{ route('shop.checkout.form') }}" class="btn-checkout-popup">{{ __('Place order') }}</a>
+            @if(empty($unavailable))
+                <a href="{{ route('shop.checkout.form') }}" class="btn-checkout-popup">{{ __('Place order') }}</a>
+            @else
+                <span class="btn-checkout-popup" style="opacity:0.55; cursor:not-allowed;">{{ __('Place order') }}</span>
+            @endif
         </div>
     @endif
 </div>
+
+<script>
+(function() {
+    var m = document.getElementById('cart_delivery_method');
+    var w = document.getElementById('cart_district_wrap');
+    if (!m || !w) return;
+    m.addEventListener('change', function() {
+        w.style.display = (m.value === 'osobisty') ? '' : 'none';
+    });
+})();
+</script>
