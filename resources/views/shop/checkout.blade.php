@@ -51,29 +51,46 @@
                 $method = old('delivery_method', $deliveryMethodForm ?? 'paczkomat');
                 $isPaczkomat = $method === 'paczkomat';
                 $isPickup = $method === 'osobisty_odbior';
+                $districtOptions = [\App\Models\Product::DISTRICT_URSYNOW, \App\Models\Product::DISTRICT_PRAGA];
                 $districtValue = old('delivery_pickup_district', $districtFromSession ?? '');
+                $districtForStock = $isPickup ? $districtValue : null;
+                $unavailable = [];
+                foreach ($items as $it) {
+                    $availableQty = 0;
+                    if (!empty($it->variant) && !empty($it->variant->id)) {
+                        $availableQty = $it->product->getVariantQuantityForDistrict((int) $it->variant->id, $districtForStock);
+                    } else {
+                        $availableQty = $it->product->getQuantityForDistrict($districtForStock);
+                    }
+                    if ($availableQty < (int) $it->quantity) {
+                        $unavailable[] = (object)[
+                            'name' => $it->product->display_name . ($it->variant_name ? (' · ' . $it->variant_name) : ''),
+                            'need' => (int) $it->quantity,
+                            'have' => (int) $availableQty,
+                        ];
+                    }
+                }
             @endphp
 
-            <input type="hidden" name="delivery_method" value="{{ $method }}">
-            @if($isPickup)
-                <input type="hidden" name="delivery_pickup_district" value="{{ $districtValue }}">
-            @endif
-
             <h3 class="checkout-section-title">{{ __('Delivery method') }}</h3>
-            <p class="checkout-item" style="margin-top: 0;">
-                @if($isPaczkomat)
-                    <strong>{{ __('Paczkomat InPost') }}</strong>
-                @else
-                    <strong>{{ __('Personal pickup') }}</strong> · {{ $districtValue ?: '—' }}
-                @endif
-            </p>
+            <div class="delivery-options">
+                <label class="delivery-option">
+                    <input type="radio" name="delivery_method" value="paczkomat" id="delivery_paczkomat" {{ $isPaczkomat ? 'checked' : '' }}>
+                    <span class="delivery-option-label">{{ __('Paczkomat InPost') }}</span>
+                    <span class="delivery-option-note">{{ __('Payment on delivery') }}</span>
+                </label>
+                <label class="delivery-option">
+                    <input type="radio" name="delivery_method" value="osobisty_odbior" id="delivery_osobisty" {{ $isPickup ? 'checked' : '' }}>
+                    <span class="delivery-option-label">{{ __('Personal pickup') }}</span>
+                    <span class="delivery-option-note">{{ __('Pickup at point') }}</span>
+                </label>
+            </div>
 
             @if($errors->has('delivery_method'))
                 <p class="checkout-error">{{ $errors->first('delivery_method') }}</p>
             @endif
 
-            @if($isPaczkomat)
-            <div id="paczkomat-fields" class="checkout-delivery-fields">
+            <div id="paczkomat-fields" class="checkout-delivery-fields" style="{{ $isPaczkomat ? '' : 'display:none;' }}">
                 <label class="checkout-label" for="delivery_paczkomat_name">{{ __('Your name') }}</label>
                 <input type="text" name="delivery_pickup_name" id="delivery_paczkomat_name" class="checkout-input" value="{{ old('delivery_pickup_name') }}" maxlength="255" placeholder="{{ __('Your name') }}">
                 @if($errors->has('delivery_pickup_name'))
@@ -91,10 +108,8 @@
                 <p class="checkout-error">{{ $errors->first('delivery_paczkomat_code') }}</p>
                 @endif
             </div>
-            @endif
 
-            @if($isPickup)
-            <div id="pickup-fields" class="checkout-delivery-fields">
+            <div id="pickup-fields" class="checkout-delivery-fields" style="{{ $isPickup ? '' : 'display:none;' }}">
                 <label class="checkout-label" for="delivery_pickup_name">{{ __('Your name') }}</label>
                 <input type="text" name="delivery_pickup_name" id="delivery_pickup_name" class="checkout-input" value="{{ old('delivery_pickup_name') }}" maxlength="255">
                 @if($errors->has('delivery_pickup_name'))
@@ -105,17 +120,32 @@
                 @if($errors->has('delivery_pickup_phone'))
                 <p class="checkout-error">{{ $errors->first('delivery_pickup_phone') }}</p>
                 @endif
-                <label class="checkout-label">{{ __('District / area') }}</label>
-                <div class="checkout-input" style="display:flex; align-items:center; min-height: 48px;">{{ $districtValue ?: '—' }}</div>
+                <label class="checkout-label" for="delivery_pickup_district">{{ __('District / area') }}</label>
+                <select name="delivery_pickup_district" id="delivery_pickup_district" class="checkout-input">
+                    <option value="">— {{ __('Choose district') }} —</option>
+                    @foreach($districtOptions as $opt)
+                        <option value="{{ $opt }}" {{ $districtValue === $opt ? 'selected' : '' }}>{{ $opt }}</option>
+                    @endforeach
+                </select>
                 @if($errors->has('delivery_pickup_district'))
                 <p class="checkout-error">{{ $errors->first('delivery_pickup_district') }}</p>
                 @endif
             </div>
+
+            @if(!empty($unavailable))
+                <div class="checkout-delivery-fields" style="border-top:none; margin-top: 12px; padding-top: 0;">
+                    <p class="checkout-error" style="margin: 0 0 8px 0;">{{ __('Insufficient product') }}</p>
+                    <ul style="margin:0; padding-left: 18px; color:#fca5a5; font-size: 13px;">
+                        @foreach($unavailable as $u)
+                            <li>{{ $u->name }} — потрібно {{ $u->need }}, доступно {{ $u->have }}</li>
+                        @endforeach
+                    </ul>
+                </div>
             @endif
         </section>
 
         <div class="checkout-actions">
-            <button type="submit" class="btn-checkout-submit">{{ __('Confirm order') }}</button>
+            <button type="submit" class="btn-checkout-submit" {{ !empty($unavailable) ? 'disabled style=opacity:0.6;cursor:not-allowed;' : '' }}>{{ __('Confirm order') }}</button>
         </div>
     </form>
 
@@ -135,6 +165,28 @@
     if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.expand) {
         Telegram.WebApp.expand();
     }
+
+    function toggleDeliveryFields() {
+        var method = document.querySelector('input[name="delivery_method"]:checked');
+        var paczkomatBlock = document.getElementById('paczkomat-fields');
+        var pickupBlock = document.getElementById('pickup-fields');
+        if (!method || !paczkomatBlock || !pickupBlock) return;
+        if (method.value === 'paczkomat') {
+            paczkomatBlock.style.display = 'block';
+            pickupBlock.style.display = 'none';
+            paczkomatBlock.querySelectorAll('input').forEach(function(i) { i.disabled = false; });
+            pickupBlock.querySelectorAll('input, select').forEach(function(i) { i.disabled = true; });
+        } else {
+            paczkomatBlock.style.display = 'none';
+            pickupBlock.style.display = 'block';
+            paczkomatBlock.querySelectorAll('input').forEach(function(i) { i.disabled = true; });
+            pickupBlock.querySelectorAll('input, select').forEach(function(i) { i.disabled = false; });
+        }
+    }
+    document.querySelectorAll('input[name="delivery_method"]').forEach(function(radio) {
+        radio.addEventListener('change', toggleDeliveryFields);
+    });
+    toggleDeliveryFields();
 
 })();
 </script>

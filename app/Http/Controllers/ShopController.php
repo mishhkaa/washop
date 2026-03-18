@@ -11,7 +11,6 @@ use App\Models\ShopCategory;
 use App\Models\User;
 use App\Services\TelegramOrderNotification;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -38,36 +37,28 @@ class ShopController extends Controller
 
     public function index(Request $request)
     {
-        // Підтягнути вибір з cookie, якщо сесія пуста (наприклад, новий браузер/вкладка)
-        if (!$request->session()->has('shop_delivery_method') && $request->cookie('shop_delivery_method')) {
-            $cm = (string) $request->cookie('shop_delivery_method');
-            $cd = $request->cookie('shop_delivery_district');
-            if (in_array($cm, ['paczkomat', 'osobisty'], true)) {
-                $request->session()->put('shop_delivery_method', $cm);
-                $request->session()->put('shop_delivery_district', $cm === 'osobisty' ? ($cd ?: null) : null);
+        // Кожного разу при вході на сайт — питаємо знову (не запамʼятовуємо вибір)
+        if (!$request->has('delivery_method')) {
+            $request->session()->forget(['shop_delivery_method', 'shop_delivery_district']);
+            $showDeliveryChoiceModal = true;
+            $deliveryMethod = null;
+            $district = null;
+        } else {
+            $dm = (string) $request->get('delivery_method');
+            $districtInput = (string) $request->get('district');
+            if (!in_array($dm, ['paczkomat', 'osobisty'], true)) {
+                $request->session()->forget(['shop_delivery_method', 'shop_delivery_district']);
+                $showDeliveryChoiceModal = true;
+                $deliveryMethod = null;
+                $district = null;
+            } else {
+                $deliveryMethod = $dm;
+                $district = $dm === 'osobisty' ? ($districtInput ?: null) : null;
+                $request->session()->put('shop_delivery_method', $deliveryMethod);
+                $request->session()->put('shop_delivery_district', $district);
+                $showDeliveryChoiceModal = ($deliveryMethod === 'osobisty' && !$district);
             }
         }
-
-        if ($request->has('delivery_method') || $request->has('district')) {
-            $dm = $request->get('delivery_method');
-            $districtInput = $request->get('district');
-            if (in_array($dm, ['paczkomat', 'osobisty'], true)) {
-                $request->session()->put('shop_delivery_method', $dm);
-            }
-            // district може бути порожнім (для paczkomat) або Ursynów/Praga (для osobisty)
-            $request->session()->put('shop_delivery_district', $districtInput ?: null);
-
-            // Записуємо також у cookie (30 днів)
-            if (in_array($dm, ['paczkomat', 'osobisty'], true)) {
-                Cookie::queue('shop_delivery_method', $dm, 60 * 24 * 30);
-                Cookie::queue('shop_delivery_district', $dm === 'osobisty' ? ((string) ($districtInput ?: '')) : '', 60 * 24 * 30);
-            }
-        }
-
-        $showDeliveryChoiceModal = !$request->session()->has('shop_delivery_method')
-            || (session('shop_delivery_method') === 'osobisty' && !$request->session()->has('shop_delivery_district'));
-        $deliveryMethod = session('shop_delivery_method');
-        $district = session('shop_delivery_district');
 
         $categories = ShopCategory::orderBy('sort_order')->orderBy('name')->get();
 
@@ -201,27 +192,6 @@ class ShopController extends Controller
         if ($request->wantsJson()) {
             return response()->json(['ok' => true, 'count' => array_sum(array_column($cart, 'quantity'))]);
         }
-        return redirect()->back()->with('open_cart', true);
-    }
-
-    public function setCartDelivery(Request $request)
-    {
-        $request->validate([
-            'delivery_method' => 'required|in:paczkomat,osobisty',
-            'district' => 'nullable|string|max:32',
-        ]);
-        $dm = (string) $request->input('delivery_method');
-        $district = $dm === 'osobisty' ? (string) ($request->input('district') ?? '') : '';
-        if ($dm === 'osobisty' && !in_array($district, [Product::DISTRICT_URSYNOW, Product::DISTRICT_PRAGA], true)) {
-            return redirect()->back()->with('error', __('Choose district'))->with('open_cart', true);
-        }
-
-        $request->session()->put('shop_delivery_method', $dm);
-        $request->session()->put('shop_delivery_district', $dm === 'osobisty' ? $district : null);
-
-        Cookie::queue('shop_delivery_method', $dm, 60 * 24 * 30);
-        Cookie::queue('shop_delivery_district', $dm === 'osobisty' ? $district : '', 60 * 24 * 30);
-
         return redirect()->back()->with('open_cart', true);
     }
 
