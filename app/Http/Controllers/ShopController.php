@@ -37,28 +37,22 @@ class ShopController extends Controller
 
     public function index(Request $request)
     {
-        // Кожного разу при вході на сайт — питаємо знову (не запамʼятовуємо вибір)
-        if (!$request->has('delivery_method')) {
-            $request->session()->forget(['shop_delivery_method', 'shop_delivery_district']);
-            $showDeliveryChoiceModal = true;
-            $deliveryMethod = null;
-            $district = null;
-        } else {
+        // Запамʼятовуємо вибір лише в сесії (поки юзер не закрив Telegram WebApp / вкладку).
+        // При переходах по сайту не питаємо знову.
+        if ($request->has('delivery_method')) {
             $dm = (string) $request->get('delivery_method');
             $districtInput = (string) $request->get('district');
-            if (!in_array($dm, ['paczkomat', 'osobisty'], true)) {
-                $request->session()->forget(['shop_delivery_method', 'shop_delivery_district']);
-                $showDeliveryChoiceModal = true;
-                $deliveryMethod = null;
-                $district = null;
-            } else {
+            if (in_array($dm, ['paczkomat', 'osobisty'], true)) {
                 $deliveryMethod = $dm;
                 $district = $dm === 'osobisty' ? ($districtInput ?: null) : null;
                 $request->session()->put('shop_delivery_method', $deliveryMethod);
                 $request->session()->put('shop_delivery_district', $district);
-                $showDeliveryChoiceModal = ($deliveryMethod === 'osobisty' && !$district);
             }
         }
+
+        $deliveryMethod = $request->session()->get('shop_delivery_method');
+        $district = $request->session()->get('shop_delivery_district');
+        $showDeliveryChoiceModal = !$deliveryMethod || ($deliveryMethod === 'osobisty' && !$district);
 
         $categories = ShopCategory::orderBy('sort_order')->orderBy('name')->get();
 
