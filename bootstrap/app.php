@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'manager' => \App\Http\Middleware\EnsureUserIsManager::class,
+            'staff' => \App\Http\Middleware\EnsureUserIsStaff::class,
             'api.token' => \App\Http\Middleware\ValidateShopApiToken::class,
         ]);
         $middleware->web(append: [\App\Http\Middleware\SetShopLocale::class]);

@@ -38,7 +38,7 @@
                     <select id="product_id" name="product_id">
                         <option value="">Оберіть товар</option>
                         @foreach($products as $product)
-                            <option value="{{ $product->id }}" data-price="{{ $product->purchase_price ?? 0 }}" data-quantity="{{ $product->quantity ?? 0 }}" {{ old('product_id') == $product->id ? 'selected' : '' }}>
+                            <option value="{{ $product->id }}" data-price="{{ $product->website_price ?? 0 }}" data-quantity="{{ $product->quantity ?? 0 }}" {{ old('product_id') == $product->id ? 'selected' : '' }}>
                                 {{ $product->name }} (залишок: {{ $product->quantity ?? 0 }} шт.)
                             </option>
                         @endforeach
@@ -118,7 +118,7 @@
 
                 let productOptions = '<option value="">Оберіть товар</option>';
                 products.forEach(product => {
-                    productOptions += `<option value="${product.id}" data-price="${product.purchase_price || 0}" data-quantity="${product.quantity || 0}">
+                    productOptions += `<option value="${product.id}" data-price="${product.website_price || 0}" data-quantity="${product.quantity || 0}">
                         ${product.name} (залишок: ${product.quantity || 0} шт.)
                     </option>`;
                 });
