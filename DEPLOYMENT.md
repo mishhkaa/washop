@@ -41,6 +41,16 @@ sudo systemctl status washop-bot
 
 Переконайся, що в `.env` у корені проєкту є: `TELEGRAM_BOT_TOKEN`, `SHOP_WEBAPP_URL`, `TELEGRAM_ORDERS_CHAT_ID`. Файл `.env` в git не потрапляє — його не перезапише `git reset --hard`.
 
+### Повний перезапис БД з dev snapshot
+
+Якщо треба один-в-один перенести поточну dev-базу на прод (SQLite), виконай:
+
+```bash
+php artisan db:seed --class=DevFullDatabaseSeeder --force
+```
+
+Сідер повністю видаляє всі таблиці у поточній SQLite БД і відновлює їх з файлу `database/seeders/sql/dev_full_snapshot.sql`.
+
 ---
 
 ## 1. Сервер і залежності
