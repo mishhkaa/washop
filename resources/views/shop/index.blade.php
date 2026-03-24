@@ -95,7 +95,7 @@
                     <select name="variant_id" id="variant-{{ $product->id }}" class="product-variant-select" required form="product-form-{{ $product->id }}">
                         <option value="">{{ __('Choose flavor') }}</option>
                         @foreach($availableVariants as $v)
-                            <option value="{{ $v->id }}">{{ $v->name }}</option>
+                            <option value="{{ $v->id }}">{{ __($v->name) }}</option>
                         @endforeach
                     </select>
                 </div>

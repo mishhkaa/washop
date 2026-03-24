@@ -23,7 +23,7 @@
                         <img src="{{ $item->product->image_path ? $item->product->image_url : 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=100&h=100&fit=crop' }}" alt="{{ $item->product->display_name }}">
                     </div>
                     <div class="cart-popup-info">
-                        <span class="cart-popup-name">{{ $item->product->display_name }}@if($item->variant_name) · {{ $item->variant_name }}@endif</span>
+                        <span class="cart-popup-name">{{ $item->product->display_name }}@if($item->variant_name) · {{ __($item->variant_name) }}@endif</span>
                         <span class="cart-popup-meta">{{ number_format($item->product->website_price ?? 0, 0) }} zł</span>
                     </div>
                     <div class="cart-popup-qty-wrap">

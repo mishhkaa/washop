@@ -153,8 +153,9 @@ class Product extends Model
     /** Назва для відображення: для категорії Pody додається позначка про рідину в подарунок */
     public function getDisplayNameAttribute(): string
     {
+        $translatedName = __($this->name);
         $suffix = ($this->shop_category === 'pods') ? ' (' . __('+ liquid as gift') . ')' : '';
-        return $this->name . $suffix;
+        return $translatedName . $suffix;
     }
 
     /** Scope: є в наявності для району (Ursynów / Praga) або для InPost (сума обох) */

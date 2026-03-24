@@ -12,7 +12,7 @@
     <ul class="checkout-items">
         @foreach($items as $item)
             <li class="checkout-item">
-                {{ $item->product->display_name }}@if($item->variant_name) · {{ $item->variant_name }}@endif × {{ $item->quantity }} — {{ number_format($item->product->website_price * $item->quantity, 0) }} zł
+                {{ $item->product->display_name }}@if($item->variant_name) · {{ __($item->variant_name) }}@endif × {{ $item->quantity }} — {{ number_format($item->product->website_price * $item->quantity, 0) }} zł
             </li>
         @endforeach
     </ul>
@@ -64,7 +64,7 @@
                     }
                     if ($availableQty < (int) $it->quantity) {
                         $unavailable[] = (object)[
-                            'name' => $it->product->display_name . ($it->variant_name ? (' · ' . $it->variant_name) : ''),
+                            'name' => $it->product->display_name . ($it->variant_name ? (' · ' . __($it->variant_name)) : ''),
                             'need' => (int) $it->quantity,
                             'have' => (int) $availableQty,
                         ];

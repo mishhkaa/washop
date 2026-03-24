@@ -42,9 +42,9 @@ class SaleItem extends Model
     /** Назва для відображення: продукт + смак (якщо є) */
     public function getDisplayNameAttribute(): string
     {
-        $name = $this->product?->name ?? '—';
+        $name = __($this->product?->name ?? '—');
         if ($this->variant_name) {
-            $name .= ' · ' . $this->variant_name;
+            $name .= ' · ' . __($this->variant_name);
         }
         return $name;
     }
