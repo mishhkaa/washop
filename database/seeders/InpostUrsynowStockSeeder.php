@@ -204,16 +204,36 @@ class InpostUrsynowStockSeeder extends Seeder
 
     private function seedSimple(string $name, int $price, string $category, int $qty): void
     {
-        Product::updateOrCreate(
-            ['name' => $name],
-            [
-                'purchase_price' => $price,
-                'shop_category' => $category,
-                'available_in_bot' => true,
-                'quantity' => $qty,
-                'quantity_praga' => $qty,
-                'quantity_ursynow' => $qty,
-            ]
+        $this->upsertProductCaseInsensitive($name, [
+            'purchase_price' => $price,
+            'shop_category' => $category,
+            'available_in_bot' => true,
+            'quantity' => $qty,
+            'quantity_praga' => $qty,
+            'quantity_ursynow' => $qty,
+        ]);
+    }
+
+    private function upsertProductCaseInsensitive(string $name, array $attributes): Product
+    {
+        $existing = Product::query()
+            ->whereRaw('LOWER(TRIM(name)) = ?', [mb_strtolower(trim($name))])
+            ->first();
+
+        if ($existing) {
+            $existing->fill(array_merge(['name' => $name], $attributes));
+            $existing->save();
+            return $existing;
+        }
+
+        return Product::create(
+            array_merge(
+                [
+                    'name' => $name,
+                    'manager_id' => null,
+                ],
+                $attributes
+            )
         );
     }
 
@@ -221,31 +241,43 @@ class InpostUrsynowStockSeeder extends Seeder
     {
         $total = array_sum(array_map(fn (array $item) => (int) $item[1], $variants));
 
-        $product = Product::updateOrCreate(
-            ['name' => $name],
-            [
-                'purchase_price' => $price,
-                'shop_category' => $category,
-                'available_in_bot' => true,
-                'quantity' => $total,
-                'quantity_praga' => $total,
-                'quantity_ursynow' => $total,
-            ]
-        );
+        $product = $this->upsertProductCaseInsensitive($name, [
+            'purchase_price' => $price,
+            'shop_category' => $category,
+            'available_in_bot' => true,
+            'quantity' => $total,
+            'quantity_praga' => $total,
+            'quantity_ursynow' => $total,
+        ]);
 
         foreach (array_values($variants) as $index => $variant) {
             $variantName = (string) $variant[0];
             $qty = (int) $variant[1];
 
-            ProductVariant::updateOrCreate(
-                ['product_id' => $product->id, 'name' => $variantName],
-                [
+            $existingVariant = ProductVariant::query()
+                ->where('product_id', $product->id)
+                ->whereRaw('LOWER(TRIM(name)) = ?', [mb_strtolower(trim($variantName))])
+                ->first();
+
+            if ($existingVariant) {
+                $existingVariant->fill([
+                    'name' => $variantName,
                     'quantity' => $qty,
                     'quantity_praga' => $qty,
                     'quantity_ursynow' => $qty,
                     'sort_order' => $index,
-                ]
-            );
+                ]);
+                $existingVariant->save();
+            } else {
+                ProductVariant::create([
+                    'product_id' => $product->id,
+                    'name' => $variantName,
+                    'quantity' => $qty,
+                    'quantity_praga' => $qty,
+                    'quantity_ursynow' => $qty,
+                    'sort_order' => $index,
+                ]);
+            }
         }
     }
 }
